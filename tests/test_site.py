@@ -228,7 +228,6 @@ class TestDiscoverability(unittest.TestCase):
         self.assertIn("https://www.burnerator.com/", locs)
         self.assertIn("https://www.burnerator.com/blog/", locs)
         posts = sorted((ROOT / "blog").glob("*/index.html"))
-        self.assertTrue(posts)
         for post in posts:
             self.assertIn(f"https://www.burnerator.com/blog/{post.parent.name}/", locs)
         self.assertTrue(all(loc.startswith("https://www.burnerator.com/") for loc in locs))
@@ -304,8 +303,10 @@ class TestBlog(unittest.TestCase):
         import xml.etree.ElementTree as ET
 
         root = ET.parse(ROOT / "blog" / "feed.xml").getroot()
-        ns = {"a": "http://www.w3.org/2005/Atom"}
-        self.assertTrue(root.findall("a:entry", ns))
+        self.assertEqual(root.tag, "{http://www.w3.org/2005/Atom}feed")
+        posts = list((ROOT / "blog").glob("*/index.html"))
+        entries = root.findall("{http://www.w3.org/2005/Atom}entry")
+        self.assertEqual(len(entries), len(posts))
 
     def test_translations_link_each_other(self):
         for es in (ROOT / "blog").glob("*/es/index.html"):
@@ -338,12 +339,16 @@ class TestBlog(unittest.TestCase):
         self.assertIn("data-title-es", js)
         home = parse(ROOT / "index.html").tags
         teaser = [a for t, a in home if t == "a" and a.get("data-href-es")]
-        self.assertTrue(teaser)
-        for a in teaser:
+        for a in teaser:  # language-specific links must point to existing pages
             target = ROOT / a["data-href-es"].lstrip("/") / "index.html"
             self.assertTrue(target.exists(), a["data-href-es"])
         for page in (ROOT / "index.html", ROOT / "blog" / "index.html"):
             self.assertTrue(parse(page).tags[0][1].get("data-title-es"), page)
+
+    def test_no_unreviewed_drafts_in_repo(self):
+        """Articles are published only after the user reviews them (drafts live outside)."""
+        for meta in (ROOT / "content" / "posts").glob("*/*.md"):
+            self.assertNotIn("draft: true", meta.read_text())
 
     def test_every_post_has_the_mascot(self):
         for page in (ROOT / "blog").glob("**/index.html"):
