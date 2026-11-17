@@ -85,9 +85,12 @@ class TestSecurity(unittest.TestCase):
                         self.assertTrue(url.startswith("https://"), url)
                     else:
                         self.fail(f"external resource <{tag} {attr}={url}> in {page.name}")
-        css = (ROOT / "assets" / "style.css").read_text()
-        self.assertNotRegex(css, r"url\(\s*['\"]?(https?:)?//", "external url() in CSS")
-        self.assertNotIn("@import", css)
+        for css_file in sorted(ROOT.rglob("*.css")):
+            if ".git" in css_file.parts:
+                continue
+            css = css_file.read_text()
+            self.assertNotRegex(css, r"url\(\s*['\"]?(https?:)?//", f"external url() in {css_file}")
+            self.assertNotIn("@import", css, str(css_file))
 
     def test_external_links_are_noopener(self):
         for tag, a in parse(ROOT / "index.html").tags:
@@ -200,7 +203,12 @@ class TestDiscoverability(unittest.TestCase):
         txt = (ROOT / ".well-known" / "security.txt").read_text()
         fields = dict(line.split(": ", 1) for line in txt.splitlines()
                       if line and not line.startswith("#"))
-        self.assertTrue(fields["Contact"].startswith("https://"))
+        self.assertEqual(
+            fields["Contact"],
+            "https://github.com/Burnerator/burnerator.github.io/security/advisories/new",
+        )
+        self.assertEqual(fields["Canonical"],
+                         "https://www.burnerator.com/.well-known/security.txt")
         expires = datetime.fromisoformat(fields["Expires"].replace("Z", "+00:00"))
         days_left = (expires - datetime.now(UTC)).days
         self.assertGreater(days_left, 30, "security.txt expires soon: renew it")

@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 render() { # src out width height
   "$chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
-    --default-background-color=00000000 --allow-file-access-from-files \
+    --default-background-color=00000000 \
     --window-size="$3,$4" --screenshot="$2" "file://$PWD/$1" 2>/dev/null
   echo "rendered $2"
 }
