@@ -147,7 +147,8 @@ class TestContent(unittest.TestCase):
 
     def test_lang_and_metadata(self):
         tags = parse(ROOT / "index.html").tags
-        self.assertEqual(tags[0], ("html", {"lang": "en"}))
+        self.assertEqual(tags[0][0], "html")
+        self.assertEqual(tags[0][1].get("lang"), "en")
         names = {a.get("name") for t, a in tags if t == "meta"}
         self.assertTrue({"viewport", "description"} <= names)
 
@@ -314,6 +315,35 @@ class TestBlog(unittest.TestCase):
                         if t == "link" and a.get("rel") == "alternate" and a.get("hreflang")}
                 self.assertEqual(alts, {"en", "es"}, page)
             self.assertEqual(parse(es).tags[0], ("html", {"lang": "es"}))
+
+    def test_results_data_published_and_linked(self):
+        import json
+
+        for page in (ROOT / "blog").glob("*/index.html"):
+            data = page.parent / "results.json"
+            if not data.exists():
+                continue
+            d = json.loads(data.read_text())
+            self.assertTrue(d["prompts"] and d["runs"] and d["harness"]["commit"])
+            self.assertRegex(d["harness"]["commit"], r"^[0-9a-f]{40}$")
+            hrefs = [a.get("href") for t, a in parse(page).tags if t == "a"]
+            self.assertIn("results.json", hrefs)
+            text = data.read_text()
+            for bad in ("nvapi-", "/Users/", "@gmail", "Bearer "):
+                self.assertNotIn(bad, text)
+
+    def test_language_aware_links_and_titles(self):
+        js = (ROOT / "assets" / "main.js").read_text()
+        self.assertIn("data-href-", js)
+        self.assertIn("data-title-es", js)
+        home = parse(ROOT / "index.html").tags
+        teaser = [a for t, a in home if t == "a" and a.get("data-href-es")]
+        self.assertTrue(teaser)
+        for a in teaser:
+            target = ROOT / a["data-href-es"].lstrip("/") / "index.html"
+            self.assertTrue(target.exists(), a["data-href-es"])
+        for page in (ROOT / "index.html", ROOT / "blog" / "index.html"):
+            self.assertTrue(parse(page).tags[0][1].get("data-title-es"), page)
 
     def test_every_post_has_the_mascot(self):
         for page in (ROOT / "blog").glob("**/index.html"):

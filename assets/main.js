@@ -35,7 +35,7 @@
     "projects.next.tag": "pronto",
     "latest.title": "Recién salido del cuaderno",
     "latest.t": "El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil",
-    "latest.p": "Velocidad, latencia y aciertos, y por qué un modelo en la nube nunca llegó a responder.",
+    "latest.p": "Velocidad, latencia y aciertos, y por qué un modelo en la nube agotó el tiempo de espera en nuestra prueba.",
     "latest.all": "Todos los artículos →",
     "blog.title": "El cuaderno del herrero",
     "blog.lead": "Todo lo que calentamos, martilleamos y medimos: benchmarks, experimentos y lecciones aprendidas, contadas en palabras sencillas.",
@@ -73,7 +73,7 @@
   }
   var meta = {
     en: { title: document.title, label: "Cambiar a español", next: "ES", nextLang: "es" },
-    es: { title: "Burnerator · una forja de ideas y open source", label: "Switch to English", next: "EN", nextLang: "en" }
+    es: { title: document.documentElement.getAttribute("data-title-es") || document.title, label: "Switch to English", next: "EN", nextLang: "en" }
   };
 
   function apply(lang) {
@@ -85,6 +85,10 @@
     alts.forEach(function (el) {
       var key = el.getAttribute("data-i18n-alt");
       if (Object.prototype.hasOwnProperty.call(dict, key)) el.setAttribute("alt", dict[key]);
+    });
+    document.querySelectorAll("[data-href-es]").forEach(function (el) {
+      if (!el.hasAttribute("data-href-en")) el.setAttribute("data-href-en", el.getAttribute("href"));
+      el.setAttribute("href", el.getAttribute("data-href-" + lang) || el.getAttribute("data-href-en"));
     });
     document.querySelectorAll("[data-show-lang]").forEach(function (el) {
       el.hidden = el.getAttribute("data-show-lang") !== lang &&

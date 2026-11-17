@@ -6,9 +6,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil · Burnerator</title>
-  <meta name="description" content="Ejecutamos los mismos modelos abiertos en la API de NVIDIA y en local con Ollama en un MacBook. Velocidad, latencia, aciertos, y por qué un modelo en la nube nunca llegó a responder.">
+  <meta name="description" content="Ejecutamos los mismos modelos abiertos en la API de NVIDIA y en local con Ollama en un MacBook. Velocidad, latencia, aciertos, y por qué un modelo en la nube agotó el tiempo de espera en nuestra prueba.">
   <meta property="og:title" content="El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil · Burnerator">
-  <meta property="og:description" content="Ejecutamos los mismos modelos abiertos en la API de NVIDIA y en local con Ollama en un MacBook. Velocidad, latencia, aciertos, y por qué un modelo en la nube nunca llegó a responder.">
+  <meta property="og:description" content="Ejecutamos los mismos modelos abiertos en la API de NVIDIA y en local con Ollama en un MacBook. Velocidad, latencia, aciertos, y por qué un modelo en la nube agotó el tiempo de espera en nuestra prueba.">
   <meta property="og:url" content="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/es/">
   <meta property="og:type" content="article">
   <meta property="og:image" content="https://www.burnerator.com/assets/og.png">
@@ -39,17 +39,17 @@
     <article class="post">
       <p class="kicker"><a href="/blog/">// El cuaderno del herrero</a></p>
       <h1>El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil</h1>
-      <p class="post-meta">Publicado <time datetime="2026-11-17">2026-11-17</time> · 3 min de lectura <a class="lang-link" href="/blog/2026-11-17-same-model-two-worlds/" hreflang="en" lang="en">Read in English</a></p>
+      <p class="post-meta">Publicado <time datetime="2026-11-17">2026-11-17</time> · 4 min de lectura <a class="lang-link" href="/blog/2026-11-17-same-model-two-worlds/" hreflang="en" lang="en">Read in English</a></p>
       <div class="post-tags" aria-label="Etiquetas"><span class="tag">benchmark</span><span class="tag">nvidia</span><span class="tag">ollama</span><span class="tag">ia-local</span></div>
       <div class="prose">
-<p><strong>Resumen rápido:</strong> con un modelo de 20B, un portátil reciente respondió bien a todas las preguntas a unos 63 tokens por segundo. El endpoint gratuito de NVIDIA para ese mismo modelo no respondió en 3 minutos. Con otros modelos, la nube de NVIDIA fue rapidísima: hasta <strong>139 tokens por segundo</strong> y respuestas en <strong>menos de medio segundo</strong>.</p>
+<p><strong>Resumen rápido:</strong> con un modelo de 20B, un portátil reciente acertó las 9 respuestas puntuadas (las preguntas con una única respuesta correcta). Mostró sus primeras palabras en 1,4 s y generó unos 63 tokens por segundo. El endpoint gratuito de NVIDIA para ese mismo modelo no respondió en 3 minutos durante nuestra prueba. Con otros modelos, la nube de NVIDIA fue rapidísima: hasta <strong>139 tokens por segundo</strong> y respuestas en <strong>menos de medio segundo</strong>.</p>
 <h2>Qué queríamos saber</h2>
 <p>¿Puedes ejecutar «el mismo modelo» en tu portátil en lugar de llamar a una API en la nube? ¿Y qué pierdes por el camino? Comparamos la API de NVIDIA (<code>integrate.api.nvidia.com</code>) con <a href="https://ollama.com" rel="noopener">Ollama</a> ejecutándose en local.</p>
 <h2>El montaje</h2>
 <ul>
 <li><strong>Portátil:</strong> Apple M5 Pro con 24 GB de memoria unificada y Ollama 0.35.</li>
 <li><strong>Nube:</strong> catálogo de la API de NVIDIA, nivel gratuito.</li>
-<li><strong>Preguntas:</strong> 6 preguntas (una cuenta, una capital, una diferencia de horas, escribir una función pequeña, un resumen en una frase y una explicación de unas 300 palabras), cada una repetida 3 veces.</li>
+<li><strong>Preguntas:</strong> 6 preguntas, cada una repetida 3 veces: <code>cuánto es 17*23</code>, <em>la capital de Australia</em>, <em>los minutos entre las 14:35 y las 17:10</em>, <em>escribe <code>is_prime(n)</code></em>, <em>un resumen en una frase</em> y <em>una explicación de unas 300 palabras sobre las tablas hash</em>. Solo las tres primeras tienen una única respuesta correcta y son las que se puntúan. Los textos exactos están en el archivo de datos de abajo.</li>
 <li><strong>Comparación justa:</strong> los dos lados usan el mismo protocolo de streaming compatible con OpenAI. Los proveedores se van turnando en quién empieza, hay una llamada de calentamiento que no se mide y se registra cada reintento.</li>
 <li><strong>Qué modelos:</strong> solo los que existen en los dos lados <em>y</em> caben en 24 GB. Quedaron <code>gpt-oss-20b</code> y dos Nemotron 3.5. Gemma 3 aparece en el catálogo de NVIDIA, pero nuestra cuenta recibió <code>404 Function not found</code>.</li>
 </ul>
@@ -78,7 +78,7 @@
 <td>gpt-oss-20b</td>
 <td>Nube de NVIDIA</td>
 <td>0/18</td>
-<td>no respondió en 180 s</td>
+<td>tiempo agotado (180 s)</td>
 <td>—</td>
 <td>—</td>
 </tr>
@@ -100,10 +100,10 @@
 </tr>
 </tbody>
 </table>
-<p><em>Medianas. «Velocidad» es la velocidad de generación en la pregunta larga. «Aciertos» cuenta las respuestas exactas a las preguntas que tienen una única respuesta correcta.</em></p>
+<p><em>Medianas sobre las peticiones correctas. «Primer token visible» es cuando aparecen las primeras palabras de la respuesta (los modelos que razonan piensan antes); las respuestas completas de gpt-oss-20b en el portátil tardaron unos 2,4 s. «Velocidad» es la velocidad de generación en la pregunta larga. «Aciertos» cuenta las respuestas exactas a las 3 preguntas puntuadas (9 intentos); los fallos cuentan como errores.</em></p>
 <h2>Qué significa (en palabras sencillas)</h2>
 <ul>
-<li><strong>Lo local puede ganar a la nube.</strong> En el nivel gratuito, el endpoint de <code>gpt-oss-20b</code> de NVIDIA estaba tan saturado que no llegó a responder, ni siquiera después del calentamiento. El mismo modelo en el portátil acertó todo en algo más de un segundo y medio.</li>
+<li><strong>Lo local puede ganar a la nube.</strong> En nuestra prueba, el endpoint gratuito de <code>gpt-oss-20b</code> de NVIDIA agotó el tiempo de espera todas las veces, incluido el calentamiento; una prueba suelta anterior tardó 63 s en responder. No sabemos por qué: una carga alta es una hipótesis razonable, pero no la hemos medido. El mismo modelo en el portátil acertó todas las respuestas puntuadas, con las primeras palabras en ~1,4 s.</li>
 <li><strong>La nube es rápida cuando está disponible.</strong> Nemotron Bolt respondió en menos de medio segundo. Lightning generó texto unas <strong>2 veces más rápido</strong> que el portátil con <code>gpt-oss-20b</code>.</li>
 <li><strong>El 78 % no es que sea «tonto», es que es «parlanchín».</strong> Lightning <em>piensa en voz alta</em> antes de responder, y 9 de sus 18 respuestas llegaron al límite de 512 tokens antes de dar la respuesta. Con un límite mayor, la mayoría se arreglará. Lo repetiremos.</li>
 </ul>
@@ -113,6 +113,11 @@
 <li>Todos los tiempos se miden <strong>desde nuestro lado</strong>, así que incluyen la latencia de red.</li>
 <li><strong>Aún no tenemos cifras de Nemotron en local</strong>: nuestra versión de Ollama era demasiado antigua para esos modelos. Será la siguiente prueba.</li>
 <li>El nivel gratuito cambia de una hora a otra. Tómalo como una foto del momento, no como un veredicto.</li>
+</ul>
+<h2>Datos y código</h2>
+<ul>
+<li><strong>Números en bruto</strong> (saneados), preguntas exactas y configuración: <a href="../results.json">results.json</a></li>
+<li><strong>Banco de pruebas</strong> en el commit exacto que usamos: <a href="https://github.com/Burnerator/anvil/blob/6cd8286a0dcb85fec7e604683e7da74d49f800c6/src/nvidia_ai/bench.py" rel="noopener">bench.py @ 6cd8286</a></li>
 </ul>
 <h2>Pruébalo tú</h2>
 <p>El banco de pruebas es open source y está en <a href="https://github.com/Burnerator/anvil" rel="noopener">Burnerator/anvil</a>:</p>

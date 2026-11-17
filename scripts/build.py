@@ -106,6 +106,9 @@ def _md() -> MarkdownIt:
 def _check_href(href: str, env: dict) -> None:
     if href.startswith(("https://", "/", "#")) and not href.startswith("//"):
         return
+    # relative links only to the post's own data files (copied next to the page)
+    if re.fullmatch(r"(\.\./)?[a-z0-9-]+\.json", href):
+        return
     raise BuildError(f"{env['where']}: link must be https, site-relative or #anchor: {href}")
 
 
@@ -162,14 +165,16 @@ def e(s: str) -> str:
 
 
 def shell(*, lang: str, title: str, description: str, canonical: str, body: str,
-          scripts: bool = False, alternates: dict[str, str] | None = None) -> str:
+          scripts: bool = False, alternates: dict[str, str] | None = None,
+          title_es: str | None = None) -> str:
     alt = "".join(
         f'\n  <link rel="alternate" hreflang="{code}" href="{SITE}{href}">'
         for code, href in (alternates or {}).items()
     )
     script = '\n  <script src="/assets/main.js" defer></script>' if scripts else ""
+    title_es = f' data-title-es="{e(title_es)}"' if title_es else ""
     return f"""<!doctype html>
-<html lang="{lang}">
+<html lang="{lang}"{title_es}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -286,6 +291,7 @@ def render_index(posts: list[Post]) -> str:
       </ul>
     </section>"""
     return shell(lang="en", title="Blog · Burnerator", canonical="/blog/", body=body,
+                 title_es="Blog · Burnerator · El cuaderno del herrero",
                  description="Benchmarks, experiments and lessons learned by the Burnerator "
                              "forge: AI explained in plain words.", scripts=True)
 
@@ -334,6 +340,12 @@ def outputs() -> dict[str, str]:
     posts = load_posts()
     files = {"blog/index.html": render_index(posts), "blog/feed.xml": render_feed(posts),
              "sitemap.xml": render_sitemap(posts)}
+    for d in sorted(POSTS.iterdir()) if POSTS.exists() else []:
+        for data in sorted(d.glob("*.json")):  # published alongside the article
+            import json
+
+            json.loads(data.read_text(encoding="utf-8"))  # must be valid JSON
+            files[f"blog/{d.name}/{data.name}"] = data.read_text(encoding="utf-8")
     for p in posts:
         rel = f"blog/{p.slug}/index.html" if p.lang == "en" else f"blog/{p.slug}/{p.lang}/index.html"
         files[rel] = render_post(p)

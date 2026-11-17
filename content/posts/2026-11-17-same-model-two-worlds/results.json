@@ -1,0 +1,145 @@
+{
+  "description": "Sanitized benchmark results behind the article 'Same model, two worlds'.",
+  "harness": {
+    "repo": "https://github.com/Burnerator/anvil",
+    "commit": "6cd8286a0dcb85fec7e604683e7da74d49f800c6",
+    "module": "src/nvidia_ai/bench.py"
+  },
+  "machine": "Apple M5 Pro, 24 GB, Darwin 27.0.0",
+  "ollama_version": "0.35.0",
+  "ollama_digests": {
+    "gpt-oss:20b": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe"
+  },
+  "settings": {
+    "runs": 3,
+    "max_tokens": 512,
+    "temperature": 0.0,
+    "seed": 42,
+    "reasoning_params": "provider defaults (no reasoning_effort / think override)"
+  },
+  "prompts": [
+    {
+      "id": "arith",
+      "text": "What is 17*23? Answer with just the number.",
+      "expected": "391"
+    },
+    {
+      "id": "capital",
+      "text": "What is the capital of Australia? Answer with one word.",
+      "expected": "canberra"
+    },
+    {
+      "id": "time",
+      "text": "A train leaves at 14:35 and arrives at 17:10. How many minutes does the trip take? Answer with just the number.",
+      "expected": "155"
+    },
+    {
+      "id": "code",
+      "text": "Write a Python function `is_prime(n: int) -> bool`. Reply with only the code.",
+      "expected": null
+    },
+    {
+      "id": "summary",
+      "text": "Summarize in one sentence: Large language models can run in the cloud, where providers serve them on powerful GPUs, or locally on a laptop, where privacy and cost are better but hardware limits model size and speed.",
+      "expected": null
+    },
+    {
+      "id": "long",
+      "text": "Explain in about 300 words how a hash map works, including hashing, collisions and resizing.",
+      "expected": null
+    }
+  ],
+  "metrics_note": "Medians over successful requests, client-observed. ttft_s = first token of any kind; ttft_content_s = first visible token; total_s = full answer; decode_tps/e2e_tps only from the 'long' prompt; accuracy = exact normalized match on prompts with an expected answer (arith, capital, time), failures count as wrong.",
+  "runs": [
+    {
+      "started_utc": "2026-11-17T10:00:03Z",
+      "providers_pairs": [
+        {
+          "label": "gpt-oss-20b",
+          "nvidia": "openai/gpt-oss-20b",
+          "ollama": "gpt-oss:20b",
+          "note": "local MXFP4 13.8 GB"
+        }
+      ],
+      "rows": [
+        {
+          "pair": "gpt-oss-20b",
+          "provider": "nvidia",
+          "n": 0,
+          "ok_rate": 0.0,
+          "error": "ReadTimeout: The read operation timed out"
+        },
+        {
+          "pair": "gpt-oss-20b",
+          "provider": "ollama",
+          "n": 18,
+          "ok_rate": 1.0,
+          "retries": 0,
+          "truncated": 1,
+          "ttft_s": 0.11167262517847121,
+          "ttft_content_s": 1.431943395640701,
+          "total_s": 2.3961877087131143,
+          "observed_s": 2.3961877087131143,
+          "decode_tps": 62.8065897345672,
+          "e2e_tps": 61.80347748787698,
+          "completion_tokens": 146.0,
+          "accuracy": 1.0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "started_utc": "2026-11-17T10:04:09Z",
+      "providers_pairs": [
+        {
+          "label": "nemotron-3.5-bolt-e4b",
+          "nvidia": "nvidia/nemotron-3.5-bolt-e4b",
+          "ollama": "nemotron-3.5-bolt:e4b",
+          "note": "local q4_K_M 7.9 GB"
+        },
+        {
+          "label": "nemotron-3.5-lightning-30b-a3b",
+          "nvidia": "nvidia/nemotron-3.5-lightning-30b-a3b",
+          "ollama": "nemotron-3.5-lightning:30b-a3b-mlx",
+          "note": "local MLX 19.1 GB (tight on 24 GB)"
+        }
+      ],
+      "rows": [
+        {
+          "pair": "nemotron-3.5-bolt-e4b",
+          "provider": "nvidia",
+          "n": 18,
+          "ok_rate": 1.0,
+          "retries": 0,
+          "truncated": 0,
+          "ttft_s": 0.19164024922065437,
+          "ttft_content_s": 0.19164024922065437,
+          "total_s": 0.4402068539056927,
+          "observed_s": 0.4402068539056927,
+          "decode_tps": 72.51427294074348,
+          "e2e_tps": 68.98315949886687,
+          "completion_tokens": 21.0,
+          "accuracy": 1.0,
+          "error": null
+        },
+        {
+          "pair": "nemotron-3.5-lightning-30b-a3b",
+          "provider": "nvidia",
+          "n": 18,
+          "ok_rate": 1.0,
+          "retries": 0,
+          "truncated": 9,
+          "ttft_s": 0.267296249512583,
+          "ttft_content_s": 2.2238308959640563,
+          "total_s": 3.162250208668411,
+          "observed_s": 3.162250208668411,
+          "decode_tps": 139.09206948113518,
+          "e2e_tps": 129.63667379382855,
+          "completion_tokens": 508.0,
+          "accuracy": 0.7777777777777778,
+          "error": null
+        }
+      ]
+    }
+  ]
+}

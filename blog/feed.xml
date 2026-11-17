@@ -11,6 +11,6 @@
     <link href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/"/>
     <id>https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/</id>
     <updated>2026-11-17T00:00:00Z</updated>
-    <summary>We ran the same open models on NVIDIA's hosted API and locally with Ollama on a MacBook. Speed, latency, accuracy, and why one cloud model never answered at all.</summary>
+    <summary>We ran the same open models on NVIDIA's hosted API and locally with Ollama on a MacBook. Speed, latency, accuracy, and why one cloud model timed out in our run.</summary>
   </entry>
 </feed>
