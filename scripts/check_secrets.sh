@@ -4,7 +4,7 @@
 #   2) gitleaks finds no secrets in the full history (pattern-based: known key formats)
 #   3) every author/committer email is a GitHub noreply address
 # It cannot detect arbitrary personal data in file contents or commit messages; that
-# still requires human review of every diff before publishing (see docs/SDLC.md).
+# still requires human review of every diff before publishing (see README.md).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

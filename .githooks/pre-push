@@ -22,7 +22,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   wt="$(mktemp -d "${TMPDIR:-/tmp}/prepush.XXXXXX")"
   git -C "$repo_root" worktree add --quiet --detach "$wt" "$local_sha"
   echo "pre-push: quality gate on $local_ref @ ${local_sha:0:7} (clean checkout)..."
-  if ! (cd "$wt" && ./scripts/check.sh); then
+  if ! (cd "$wt" && ./scripts/check_secrets.sh && ./scripts/check.sh); then
     echo "pre-push: checks failed for $local_ref @ ${local_sha:0:7} — push aborted." >&2
     status=1
   fi

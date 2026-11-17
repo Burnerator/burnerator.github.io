@@ -20,23 +20,23 @@
   <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
 
   <header class="top">
-    <a class="brand" href="#top" aria-label="Burnerator home">
+    <a class="brand" href="#top">
       <img src="assets/favicon.svg" alt="" width="28" height="28">
       <span>burnerator</span>
     </a>
-    <nav aria-label="Main">
+    <nav>
       <a href="#what" data-i18n="nav.what">What</a>
       <a href="#projects" data-i18n="nav.projects">Projects</a>
       <a href="#how" data-i18n="nav.how">How</a>
       <a href="#join" data-i18n="nav.join">Join</a>
     </nav>
-    <button class="lang" type="button" id="lang-toggle" aria-label="Cambiar a español" hidden>ES</button>
+    <button class="lang" type="button" id="lang-toggle" lang="es" aria-label="Cambiar a español" hidden>ES</button>
   </header>
 
   <main id="main">
     <section class="hero" id="top">
-      <div class="terminal" role="img" aria-label="Terminal: burnerator forge igniting">
-        <div class="term-bar"><span></span><span></span><span></span><em>burnerator@forge: ~</em></div>
+      <div class="terminal">
+        <div class="term-bar" aria-hidden="true"><span></span><span></span><span></span><em>burnerator@forge: ~</em></div>
         <pre class="term-body"><span class="p">burnerator@forge:~$</span> ./ignite --ideas --open-source
 <span class="ok">[ok]</span> <span data-i18n="term.l1">heating the forge...</span>
 <span class="ok">[ok]</span> <span data-i18n="term.l2">friends online: plenty</span>
@@ -67,7 +67,7 @@
         <article class="card">
           <div class="icon" aria-hidden="true">⚒️</div>
           <h3 data-i18n="what.c2.t">Open source by default</h3>
-          <p data-i18n="what.c2.p">Code, experiments and benchmarks are public. Fork them, break them, improve them.</p>
+          <p data-i18n="what.c2.p">Code, experiments and benchmarks are public. Fork them, experiment, make them better.</p>
         </article>
         <article class="card">
           <div class="icon" aria-hidden="true">🤖</div>
@@ -90,7 +90,7 @@
         <li class="project soon">
           <div class="project-head">
             <h3 data-i18n="projects.next.t">Your idea here</h3>
-            <span class="tag">soon</span>
+            <span class="tag" data-i18n="projects.next.tag">soon</span>
           </div>
           <p data-i18n="projects.next.p">The next project starts as a conversation. Bring yours.</p>
         </li>
@@ -101,7 +101,7 @@
       <h2><span class="hash">#</span> <span data-i18n="how.title">How we work</span></h2>
       <ol class="steps">
         <li><span class="n">01</span><div><h3 data-i18n="how.s1.t">Play first</h3><p data-i18n="how.s1.p">We pick a shiny new technology and poke it until it makes sense.</p></div></li>
-        <li><span class="n">02</span><div><h3 data-i18n="how.s2.t">AI-assisted, human-decided</h3><p data-i18n="how.s2.p">AI writes, reviews and suggests. People decide, test and sign off. Every change passes tests and a second opinion.</p></div></li>
+        <li><span class="n">02</span><div><h3 data-i18n="how.s2.t">AI-assisted, human-led</h3><p data-i18n="how.s2.p">AI writes, reviews and suggests. People decide, test and sign off. We test every change and ask for independent reviews.</p></div></li>
         <li><span class="n">03</span><div><h3 data-i18n="how.s3.t">Safe by design</h3><p data-i18n="how.s3.p">No secrets in public repos, no trackers on this site, and we measure before we trust.</p></div></li>
         <li><span class="n">04</span><div><h3 data-i18n="how.s4.t">Explain it simply</h3><p data-i18n="how.s4.p">If we can't explain it to a friend over coffee, we don't understand it yet.</p></div></li>
       </ol>
@@ -116,7 +116,7 @@
 
   <footer class="foot">
     <p><span class="p">$</span> <span data-i18n="foot.p">made with curiosity, coffee and a bit of AI</span> · <span>© <span id="year">2026</span> Burnerator</span></p>
-    <p class="small" data-i18n="foot.privacy">No cookies, no analytics, no trackers.</p>
+    <p class="small" data-i18n="foot.privacy">This site's code uses no cookies, analytics or trackers. Your language choice stays in your browser. Hosting by GitHub Pages, which may log technical data such as IP addresses.</p>
   </footer>
 </body>
 </html>

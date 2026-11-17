@@ -47,10 +47,14 @@ class TestSecurity(unittest.TestCase):
             csp = [a.get("content", "") for t, a in parse(page).tags
                    if t == "meta" and a.get("http-equiv", "").lower() == "content-security-policy"]
             self.assertEqual(len(csp), 1, page.name)
-            self.assertIn("default-src 'none'", csp[0])
-            self.assertNotIn("unsafe-inline", csp[0])
-            self.assertNotIn("unsafe-eval", csp[0])
-            self.assertNotIn("http", csp[0])  # no external origins allowed
+            directives = {d.split()[0]: d.split()[1:] for d in csp[0].split(";") if d.strip()}
+            self.assertEqual(directives.get("default-src"), ["'none'"])
+            self.assertEqual(directives.get("base-uri"), ["'none'"])
+            self.assertEqual(directives.get("form-action"), ["'none'"])
+            allowed = {"'self'", "'none'", "data:"}
+            for name, sources in directives.items():
+                self.assertTrue(set(sources) <= allowed, f"{page.name}: {name} {sources}")
+            self.assertNotIn("data:", directives.get("script-src", []))
 
     def test_no_inline_code_or_styles(self):
         for page in PAGES:
@@ -136,6 +140,21 @@ class TestContent(unittest.TestCase):
             for tag, a in parse(page).tags:
                 if tag == "img":
                     self.assertIn("alt", a, page.name)
+
+    def test_js_validates_stored_language(self):
+        js = (ROOT / "assets" / "main.js").read_text()
+        self.assertIn('lang === "en" || lang === "es"', js)
+
+    def test_blinking_stops_within_5s(self):
+        css = (ROOT / "assets" / "style.css").read_text()
+        m = re.search(r"\.cursor \{[^}]*animation: blink ([0-9.]+)s steps\(1\) (\d+)", css)
+        self.assertIsNotNone(m)
+        self.assertLess(float(m.group(1)) * int(m.group(2)), 5)
+
+    def test_404_has_heading_and_home_link(self):
+        c = parse(ROOT / "404.html")
+        self.assertIn("h1", [t for t, _ in c.tags])
+        self.assertIn("/", [a.get("href") for t, a in c.tags if t == "a"])
 
     def test_cname(self):
         self.assertEqual((ROOT / "CNAME").read_text().strip(), "www.burnerator.com")

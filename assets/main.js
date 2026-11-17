@@ -15,7 +15,7 @@
     "term.l4": "nivel de curiosidad: peligrosamente alto",
     "hero.kicker": "// una forja de ideas y open source",
     "hero.title": "Calentamos ideas hasta que se convierten en proyectos.",
-    "hero.lead1": "Burnerator es un grupo de amigos jugando con nuevas tecnologías, en plan geek. Construimos en abierto, con la IA como compañera, y lo contamos para que cualquiera pueda seguirlo:",
+    "hero.lead1": "Burnerator es un grupo de amigos que experimenta con nuevas tecnologías, en plan geek. Construimos en abierto, con la IA como compañera, y lo contamos para que cualquiera pueda seguirlo:",
     "hero.lead2": "IA para dummies",
     "hero.lead3": ", sin necesidad de doctorado.",
     "hero.cta1": "Explóralo en GitHub",
@@ -24,18 +24,19 @@
     "what.c1.t": "Ideas, a golpe de martillo",
     "what.c1.p": "Cada “¿y si...?” loco tiene su oportunidad. Prototipamos rápido, nos quedamos con lo que funciona y aprendemos de lo que se funde.",
     "what.c2.t": "Open source por defecto",
-    "what.c2.p": "El código, los experimentos y los benchmarks son públicos. Haz fork, rómpelos, mejóralos.",
+    "what.c2.p": "El código, los experimentos y los benchmarks son públicos. Haz un fork, experimenta y mejóralos.",
     "what.c3.t": "IA para dummies",
     "what.c3.p": "Probamos herramientas de IA con problemas reales y te contamos, en palabras sencillas, qué hacen, cuánto cuestan y dónde fallan.",
     "projects.title": "Sobre el yunque",
     "projects.nvidiator": "El mismo modelo, dos mundos: la API en la nube de NVIDIA frente a ejecutarlo en un portátil con Ollama. Latencia, tokens por segundo y números honestos.",
     "projects.next.t": "Tu idea aquí",
     "projects.next.p": "El próximo proyecto empieza con una conversación. Trae la tuya.",
+    "projects.next.tag": "pronto",
     "how.title": "Cómo trabajamos",
     "how.s1.t": "Primero, jugar",
     "how.s1.p": "Elegimos una tecnología nueva y brillante y la toqueteamos hasta que tiene sentido.",
-    "how.s2.t": "Con ayuda de IA, decisión humana",
-    "how.s2.p": "La IA escribe, revisa y sugiere. Las personas deciden, prueban y dan el visto bueno. Cada cambio pasa tests y una segunda opinión.",
+    "how.s2.t": "Con ayuda de IA, liderado por personas",
+    "how.s2.p": "La IA escribe, revisa y sugiere. Las personas deciden, prueban y dan el visto bueno. Probamos cada cambio y buscamos revisiones independientes.",
     "how.s3.t": "Seguro desde el diseño",
     "how.s3.p": "Nada de secretos en repos públicos, nada de rastreadores en esta web, y medimos antes de fiarnos.",
     "how.s4.t": "Explicarlo fácil",
@@ -44,7 +45,7 @@
     "join.p": "Curioso, principiante o geek veterano: todos bienvenidos. Abre un issue, manda un pull request o simplemente ven a ver las chispas.",
     "join.cta": "github.com/Burnerator",
     "foot.p": "hecho con curiosidad, café y un poco de IA",
-    "foot.privacy": "Sin cookies, sin analítica, sin rastreadores."
+    "foot.privacy": "El código de esta web no usa cookies, analítica ni rastreadores. Tu elección de idioma se guarda en tu navegador. Alojada en GitHub Pages, que puede registrar datos técnicos como la dirección IP."
   };
 
   var nodes = document.querySelectorAll("[data-i18n]");
@@ -53,8 +54,8 @@
 
   var btn = document.getElementById("lang-toggle");
   var meta = {
-    en: { title: document.title, label: "Cambiar a español", next: "ES" },
-    es: { title: "Burnerator · una forja de ideas y open source", label: "Switch to English", next: "EN" }
+    en: { title: document.title, label: "Cambiar a español", next: "ES", nextLang: "es" },
+    es: { title: "Burnerator · una forja de ideas y open source", label: "Switch to English", next: "EN", nextLang: "en" }
   };
 
   function apply(lang) {
@@ -67,6 +68,7 @@
     document.title = meta[lang].title;
     btn.textContent = meta[lang].next;
     btn.setAttribute("aria-label", meta[lang].label);
+    btn.setAttribute("lang", meta[lang].nextLang);
     btn.dataset.lang = lang;
   }
 
@@ -77,7 +79,9 @@
     try { window.localStorage.setItem("lang", lang); } catch (e) { /* private mode */ }
   }
 
-  var initial = stored() ||
+  function valid(lang) { return lang === "en" || lang === "es"; }
+  var saved = stored();
+  var initial = valid(saved) ? saved :
     ((navigator.language || "").toLowerCase().indexOf("es") === 0 ? "es" : "en");
 
   btn.hidden = false;
