@@ -28,7 +28,7 @@
     "what.c3.t": "IA para dummies",
     "what.c3.p": "Probamos herramientas de IA con problemas reales y te contamos, en palabras sencillas, qué hacen, cuánto cuestan y dónde fallan.",
     "projects.title": "Sobre el yunque",
-    "projects.nvidiator": "El mismo modelo, dos mundos: la API en la nube de NVIDIA frente a ejecutarlo en un portátil con Ollama. Latencia, tokens por segundo y números honestos.",
+    "projects.anvil": "Nuestro banco de trabajo: las herramientas con las que forjamos cada proyecto, con tests, escaneo de secretos y un revisor de IA independiente en cada cambio. Lo primero sobre el yunque: el mismo modelo en la nube de NVIDIA frente a un portátil con Ollama.",
     "projects.next.t": "Tu idea aquí",
     "projects.next.p": "El próximo proyecto empieza con una conversación. Trae la tuya.",
     "projects.next.tag": "pronto",
@@ -44,13 +44,16 @@
     "join.title": "Acércate al fuego",
     "join.p": "Curioso, principiante o geek veterano: todos bienvenidos. Abre un issue, manda un pull request o simplemente ven a ver las chispas.",
     "join.cta": "github.com/Burnerator",
+    "join.mascot": "La mascota de Burnerator: un pequeño robot herrero muy simpático, con ojos de brasa y un martillo",
     "foot.p": "hecho con curiosidad, café y un poco de IA",
     "foot.privacy": "El código de esta web no usa cookies, analítica ni rastreadores. Tu elección de idioma se guarda en tu navegador. Alojada en GitHub Pages, que puede registrar datos técnicos como la dirección IP."
   };
 
   var nodes = document.querySelectorAll("[data-i18n]");
+  var alts = document.querySelectorAll("[data-i18n-alt]");
   var EN = {};
   nodes.forEach(function (el) { EN[el.getAttribute("data-i18n")] = el.textContent; });
+  alts.forEach(function (el) { EN[el.getAttribute("data-i18n-alt")] = el.getAttribute("alt"); });
 
   var btn = document.getElementById("lang-toggle");
   var meta = {
@@ -63,6 +66,10 @@
     nodes.forEach(function (el) {
       var key = el.getAttribute("data-i18n");
       if (Object.prototype.hasOwnProperty.call(dict, key)) el.textContent = dict[key];
+    });
+    alts.forEach(function (el) {
+      var key = el.getAttribute("data-i18n-alt");
+      if (Object.prototype.hasOwnProperty.call(dict, key)) el.setAttribute("alt", dict[key]);
     });
     document.documentElement.lang = lang;
     document.title = meta[lang].title;

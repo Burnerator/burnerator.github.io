@@ -107,8 +107,9 @@ class TestSecurity(unittest.TestCase):
 
 class TestContent(unittest.TestCase):
     def test_i18n_keys_match_both_languages(self):
-        html_keys = {a["data-i18n"] for _, a in parse(ROOT / "index.html").tags
-                     if "data-i18n" in a}
+        tags = parse(ROOT / "index.html").tags
+        html_keys = {a["data-i18n"] for _, a in tags if "data-i18n" in a}
+        html_keys |= {a["data-i18n-alt"] for _, a in tags if "data-i18n-alt" in a}
         js = (ROOT / "assets" / "main.js").read_text()
         es_block = js[js.index("var ES = {"): js.index("};", js.index("var ES = {"))]
         es_keys = set(re.findall(r'^\s*"([a-z0-9.]+)":', es_block, re.M))
@@ -184,6 +185,27 @@ class TestDiscoverability(unittest.TestCase):
         self.assertTrue(metas.get("og:image:alt"))
         self.assertEqual(self.png_size(ROOT / "assets" / "og.png"), (1200, 630))
         self.assertLess((ROOT / "assets" / "og.png").stat().st_size, 1_000_000)
+
+    def test_brand_images(self):
+        for name, size in (("img/favicon-32.png", (32, 32)), ("img/favicon-64.png", (64, 64)),
+                           ("img/mascot-240.png", (240, 240)),
+                           ("img/mascot-480.png", (480, 480))):
+            self.assertEqual(self.png_size(ROOT / "assets" / name), size, name)
+            self.assertLess((ROOT / "assets" / name).stat().st_size, 400_000, name)
+
+    def test_404_mascot_speaks_both_languages(self):
+        html = (ROOT / "404.html").read_text()
+        c = parse(ROOT / "404.html")
+        self.assertIn("/assets/img/mascot-240.png", [a.get("src") for t, a in c.tags])
+        self.assertTrue(all(a.get("alt") for t, a in c.tags if t == "img"))
+        # non-empty message in each language, and a translated way home
+        en = re.search(r'<p class="say">([^<]+)</p>', html)
+        es = re.search(r'<p class="say-es" lang="es">([^<]+)</p>', html)
+        self.assertTrue(en and en.group(1).strip(), "missing English message")
+        self.assertTrue(es and es.group(1).strip(), "missing Spanish message")
+        home = re.search(r'<a class="btn primary" href="/">(.+?)</a>', html, re.S)
+        self.assertTrue(home, "missing home link")
+        self.assertRegex(home.group(1), r'Back to the forge.*<span lang="es">[^<]+</span>')
 
     def test_touch_icon(self):
         self.assertEqual(self.png_size(ROOT / "assets" / "apple-touch-icon.png"), (180, 180))
