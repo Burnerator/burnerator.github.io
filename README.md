@@ -41,6 +41,10 @@ python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-
 
 Generated files are committed; CI fails if they are stale (`build.py --check`).
 
+**Publishing rule:** articles are drafted outside the repo (`~/wks/burnerator-drafts/`) and
+previewed locally with `scripts/preview.sh` (builds a throwaway copy, serves on 127.0.0.1).
+They enter this repo only after the maintainers have reviewed and approved them.
+
 ## Assets & housekeeping
 
 - `assets/og.png` (social card, 1200×630) is rendered from `design/og-card.html` with
