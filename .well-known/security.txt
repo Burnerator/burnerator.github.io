@@ -1,0 +1,5 @@
+# Found a security issue? Please report it privately, not in a public issue.
+Contact: https://github.com/Burnerator/burnerator.github.io/security/advisories/new
+Expires: 2027-11-17T00:00:00.000Z
+Preferred-Languages: en, es
+Canonical: https://www.burnerator.com/.well-known/security.txt

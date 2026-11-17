@@ -6,7 +6,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = [ROOT / "index.html", ROOT / "404.html"]
+PAGES = sorted(p for p in ROOT.rglob("*.html") if ".git" not in p.parts)
 ALLOWED_LINK_HOSTS = {"github.com", "www.burnerator.com"}
 
 
@@ -124,9 +124,12 @@ class TestContent(unittest.TestCase):
                         if page.name == "index.html":
                             self.assertIn(url[1:], c.ids, f"missing anchor {url}")
                         continue
-                    target = ROOT / url.lstrip("/")
                     if url == "/":
                         target = ROOT / "index.html"
+                    elif url.startswith("/"):
+                        target = ROOT / url.lstrip("/")  # site-absolute
+                    else:
+                        target = (page.parent / url).resolve()  # relative to the page
                     self.assertTrue(target.exists(), f"{page.name}: {url}")
 
     def test_lang_and_metadata(self):
@@ -159,6 +162,54 @@ class TestContent(unittest.TestCase):
     def test_cname(self):
         self.assertEqual((ROOT / "CNAME").read_text().strip(), "www.burnerator.com")
         self.assertTrue((ROOT / ".nojekyll").exists())
+
+
+class TestDiscoverability(unittest.TestCase):
+    @staticmethod
+    def png_size(path: Path) -> tuple[int, int]:
+        import struct
+
+        head = path.read_bytes()[:24]
+        assert head[:8] == b"\x89PNG\r\n\x1a\n", f"{path.name} is not a PNG"
+        return struct.unpack(">II", head[16:24])
+
+    def test_social_card(self):
+        metas = {a.get("property") or a.get("name"): a.get("content")
+                 for t, a in parse(ROOT / "index.html").tags if t == "meta"}
+        self.assertEqual(metas["og:image"], "https://www.burnerator.com/assets/og.png")
+        self.assertEqual(metas["twitter:card"], "summary_large_image")
+        self.assertTrue(metas.get("og:image:alt"))
+        self.assertEqual(self.png_size(ROOT / "assets" / "og.png"), (1200, 630))
+        self.assertLess((ROOT / "assets" / "og.png").stat().st_size, 1_000_000)
+
+    def test_touch_icon(self):
+        self.assertEqual(self.png_size(ROOT / "assets" / "apple-touch-icon.png"), (180, 180))
+
+    def test_sitemap_and_robots(self):
+        import xml.etree.ElementTree as ET
+
+        ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        locs = [e.text for e in ET.parse(ROOT / "sitemap.xml").getroot().findall("s:url/s:loc", ns)]
+        self.assertEqual(locs, ["https://www.burnerator.com/"])
+        self.assertIn("Sitemap: https://www.burnerator.com/sitemap.xml",
+                      (ROOT / "robots.txt").read_text())
+
+    def test_security_txt_valid_and_not_expired(self):
+        from datetime import UTC, datetime
+
+        txt = (ROOT / ".well-known" / "security.txt").read_text()
+        fields = dict(line.split(": ", 1) for line in txt.splitlines()
+                      if line and not line.startswith("#"))
+        self.assertTrue(fields["Contact"].startswith("https://"))
+        expires = datetime.fromisoformat(fields["Expires"].replace("Z", "+00:00"))
+        days_left = (expires - datetime.now(UTC)).days
+        self.assertGreater(days_left, 30, "security.txt expires soon: renew it")
+        self.assertLessEqual(days_left, 366, "RFC 9116: Expires should be < 1 year")
+
+    def test_design_sources_not_indexed(self):
+        for page in (ROOT / "design").glob("*.html"):
+            names = {a.get("name"): a.get("content") for t, a in parse(page).tags if t == "meta"}
+            self.assertEqual(names.get("robots"), "noindex", page.name)
 
 
 if __name__ == "__main__":
