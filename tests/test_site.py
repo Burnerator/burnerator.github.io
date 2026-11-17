@@ -77,9 +77,12 @@ class TestSecurity(unittest.TestCase):
                     url = a.get(attr, "")
                     if not url.startswith(("http://", "https://", "//")):
                         continue
-                    if tag == "a" or (tag == "link" and a.get("rel") == "canonical") or (
-                        tag == "meta"
-                    ):
+                    own_link = tag == "link" and a.get("rel") in ("canonical", "alternate")
+                    if tag == "a":
+                        # navigation links load nothing; they must be https + noopener
+                        self.assertTrue(url.startswith("https://"), url)
+                        self.assertIn("noopener", a.get("rel", ""), url)
+                    elif own_link or tag == "meta":
                         host = re.sub(r"^(https?:)?//", "", url).split("/")[0]
                         self.assertIn(host, ALLOWED_LINK_HOSTS, url)
                         self.assertTrue(url.startswith("https://"), url)
@@ -107,9 +110,14 @@ class TestSecurity(unittest.TestCase):
 
 class TestContent(unittest.TestCase):
     def test_i18n_keys_match_both_languages(self):
-        tags = parse(ROOT / "index.html").tags
-        html_keys = {a["data-i18n"] for _, a in tags if "data-i18n" in a}
-        html_keys |= {a["data-i18n-alt"] for _, a in tags if "data-i18n-alt" in a}
+        html_keys = set()
+        for page in (ROOT / "index.html", ROOT / "blog" / "index.html"):
+            tags = parse(page).tags
+            html_keys |= {a["data-i18n"] for _, a in tags if "data-i18n" in a}
+            html_keys |= {a["data-i18n-alt"] for _, a in tags if "data-i18n-alt" in a}
+        # keys only emitted in some states (e.g. empty blog) live in the generator
+        html_keys |= set(re.findall(r'data-i18n(?:-alt)?="([a-z0-9.]+)"',
+                                    (ROOT / "scripts" / "build.py").read_text()))
         js = (ROOT / "assets" / "main.js").read_text()
         es_block = js[js.index("var ES = {"): js.index("};", js.index("var ES = {"))]
         es_keys = set(re.findall(r'^\s*"([a-z0-9.]+)":', es_block, re.M))
@@ -128,17 +136,19 @@ class TestContent(unittest.TestCase):
                         if page.name == "index.html":
                             self.assertIn(url[1:], c.ids, f"missing anchor {url}")
                         continue
-                    if url == "/":
-                        target = ROOT / "index.html"
-                    elif url.startswith("/"):
-                        target = ROOT / url.lstrip("/")  # site-absolute
+                    path = url.split("#", 1)[0]
+                    if path.startswith("/"):
+                        target = ROOT / path.lstrip("/")  # site-absolute
                     else:
-                        target = (page.parent / url).resolve()  # relative to the page
+                        target = (page.parent / path).resolve()  # relative to the page
+                    if path.endswith("/") or target.is_dir():
+                        target = target / "index.html"
                     self.assertTrue(target.exists(), f"{page.name}: {url}")
 
     def test_lang_and_metadata(self):
         tags = parse(ROOT / "index.html").tags
-        self.assertEqual(tags[0], ("html", {"lang": "en"}))
+        self.assertEqual(tags[0][0], "html")
+        self.assertEqual(tags[0][1].get("lang"), "en")
         names = {a.get("name") for t, a in tags if t == "meta"}
         self.assertTrue({"viewport", "description"} <= names)
 
@@ -215,7 +225,13 @@ class TestDiscoverability(unittest.TestCase):
 
         ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
         locs = [e.text for e in ET.parse(ROOT / "sitemap.xml").getroot().findall("s:url/s:loc", ns)]
-        self.assertEqual(locs, ["https://www.burnerator.com/"])
+        self.assertIn("https://www.burnerator.com/", locs)
+        self.assertIn("https://www.burnerator.com/blog/", locs)
+        posts = sorted((ROOT / "blog").glob("*/index.html"))
+        self.assertTrue(posts)
+        for post in posts:
+            self.assertIn(f"https://www.burnerator.com/blog/{post.parent.name}/", locs)
+        self.assertTrue(all(loc.startswith("https://www.burnerator.com/") for loc in locs))
         self.assertIn("Sitemap: https://www.burnerator.com/sitemap.xml",
                       (ROOT / "robots.txt").read_text())
 
@@ -240,6 +256,101 @@ class TestDiscoverability(unittest.TestCase):
         for page in (ROOT / "design").glob("*.html"):
             names = {a.get("name"): a.get("content") for t, a in parse(page).tags if t == "meta"}
             self.assertEqual(names.get("robots"), "noindex", page.name)
+
+
+class TestBlog(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import sys
+
+        sys.path.insert(0, str(ROOT / "scripts"))
+        try:
+            import build  # noqa: F401
+        except ModuleNotFoundError as exc:  # markdown-it-py missing
+            raise unittest.SkipTest(f"build deps not installed: {exc}") from exc
+        cls.build = build
+
+    def test_generated_output_is_up_to_date(self):
+        self.assertEqual(self.build.main(["--check"]), 0)
+
+    def test_raw_html_in_markdown_is_escaped(self):
+        md = self.build._md()
+        out = md.render("<script>alert(1)</script> <img src=x onerror=y>", {"where": "t"})
+        self.assertNotIn("<script", out)
+        self.assertNotIn("<img", out)
+        self.assertIn("&lt;script&gt;", out)
+
+    def test_external_images_and_unsafe_links_rejected(self):
+        md = self.build._md()
+        for bad in ("![x](https://evil.example/p.png)", "![x](//evil.example/p.png)",
+                    "[x](http://plain.example)", "[x](//evil.example)"):
+            with self.assertRaises(self.build.BuildError, msg=bad):
+                md.render(bad, {"where": "t"})
+        # markdown-it itself refuses javascript:/data: URLs (rendered as plain text)
+        for dangerous in ("[x](javascript:alert(1))", "[x](data:text/html,hi)"):
+            self.assertNotIn("href", md.render(dangerous, {"where": "t"}))
+        ok = md.render("[a](https://example.com) [b](/blog/) [c](#x) ![i](/assets/og.png)",
+                       {"where": "t"})
+        self.assertIn('rel="noopener"', ok)
+
+    def test_front_matter_is_escaped(self):
+        meta, body = self.build.parse_front_matter(
+            "---\ntitle: <b>x</b>\ndate: 2026-01-01\nsummary: s\n---\nbody", "t")
+        p = self.build.Post("2026-01-01-x", "en", meta, body, langs=("en",))
+        p.html = ""
+        self.assertIn("&lt;b&gt;x&lt;/b&gt;", self.build.render_post(p))
+
+    def test_feed_is_valid_atom(self):
+        import xml.etree.ElementTree as ET
+
+        root = ET.parse(ROOT / "blog" / "feed.xml").getroot()
+        ns = {"a": "http://www.w3.org/2005/Atom"}
+        self.assertTrue(root.findall("a:entry", ns))
+
+    def test_translations_link_each_other(self):
+        for es in (ROOT / "blog").glob("*/es/index.html"):
+            en = es.parent.parent / "index.html"
+            for page in (en, es):
+                alts = {a.get("hreflang") for t, a in parse(page).tags
+                        if t == "link" and a.get("rel") == "alternate" and a.get("hreflang")}
+                self.assertEqual(alts, {"en", "es"}, page)
+            self.assertEqual(parse(es).tags[0], ("html", {"lang": "es"}))
+
+    def test_results_data_published_and_linked(self):
+        import json
+
+        for page in (ROOT / "blog").glob("*/index.html"):
+            data = page.parent / "results.json"
+            if not data.exists():
+                continue
+            d = json.loads(data.read_text())
+            self.assertTrue(d["prompts"] and d["runs"] and d["harness"]["commit"])
+            self.assertRegex(d["harness"]["commit"], r"^[0-9a-f]{40}$")
+            hrefs = [a.get("href") for t, a in parse(page).tags if t == "a"]
+            self.assertIn("results.json", hrefs)
+            text = data.read_text()
+            for bad in ("nvapi-", "/Users/", "@gmail", "Bearer "):
+                self.assertNotIn(bad, text)
+
+    def test_language_aware_links_and_titles(self):
+        js = (ROOT / "assets" / "main.js").read_text()
+        self.assertIn("data-href-", js)
+        self.assertIn("data-title-es", js)
+        home = parse(ROOT / "index.html").tags
+        teaser = [a for t, a in home if t == "a" and a.get("data-href-es")]
+        self.assertTrue(teaser)
+        for a in teaser:
+            target = ROOT / a["data-href-es"].lstrip("/") / "index.html"
+            self.assertTrue(target.exists(), a["data-href-es"])
+        for page in (ROOT / "index.html", ROOT / "blog" / "index.html"):
+            self.assertTrue(parse(page).tags[0][1].get("data-title-es"), page)
+
+    def test_every_post_has_the_mascot(self):
+        for page in (ROOT / "blog").glob("**/index.html"):
+            if page.parent.name == "blog":
+                continue
+            srcs = [a.get("src") for t, a in parse(page).tags if t == "img"]
+            self.assertIn("/assets/img/mascot-240.png", srcs, page)
 
 
 if __name__ == "__main__":

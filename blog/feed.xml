@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Burnerator · The blacksmith's logbook</title>
+  <link href="https://www.burnerator.com/blog/"/>
+  <link rel="self" href="https://www.burnerator.com/blog/feed.xml"/>
+  <id>https://www.burnerator.com/blog/</id>
+  <updated>2026-11-17T00:00:00Z</updated>
+  <author><name>Burnerator</name></author>
+  <entry>
+    <title>Same model, two worlds: NVIDIA's cloud vs. a laptop</title>
+    <link href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/"/>
+    <id>https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/</id>
+    <updated>2026-11-17T00:00:00Z</updated>
+    <summary>We ran the same open models on NVIDIA's hosted API and locally with Ollama on a MacBook. Speed, latency, accuracy, and why one cloud model timed out in our run.</summary>
+  </entry>
+</feed>
