@@ -16,10 +16,12 @@ posts=("$drafts"/*/)
 (( ${#posts[@]} )) || echo "preview: note: no drafts in $drafts (previewing the published site)"
 
 tmp="$(mktemp -d "${TMPDIR:-/tmp}/burnerator-preview.XXXXXX")"
-# allowlist: only what the public site is built from / serves
-for item in index.html 404.html CNAME robots.txt .nojekyll assets .well-known design content scripts; do
-  [[ -e "$repo/$item" ]] && cp -R "$repo/$item" "$tmp/"
-done
+# allowlist of site inputs, and within it ONLY git-tracked files (ignored files never copied)
+allow=(index.html 404.html CNAME robots.txt .nojekyll assets .well-known design scripts)
+while IFS= read -r -d '' f; do
+  mkdir -p "$tmp/$(dirname "$f")"
+  cp "$repo/$f" "$tmp/$f"
+done < <(git -C "$repo" ls-files -z -- "${allow[@]}")
 mkdir -p "$tmp/content/posts"
 for p in "${posts[@]}"; do cp -R "${p%/}" "$tmp/content/posts/"; done  # no trailing slash: copy the folder itself
 

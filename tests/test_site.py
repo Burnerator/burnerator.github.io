@@ -350,13 +350,13 @@ class TestBlog(unittest.TestCase):
         The real control is process: articles enter the repo only after maintainer review."""
         for md in (ROOT / "content" / "posts").glob("*/*.md"):
             head = md.read_text().split("\n---\n", 1)[0]
-            self.assertNotRegex(head, r"(?m)^draft\s*:", md)
+            self.assertNotRegex(head, r"(?m)^\s*draft\s*:", md)  # build.py strips key whitespace
 
     def test_preview_script_is_allowlist_and_fails_loudly(self):
         sh = (ROOT / "scripts" / "preview.sh").read_text()
         self.assertNotIn("rsync", sh)
         self.assertNotIn("|| true", sh)
-        self.assertIn("for item in index.html", sh)
+        self.assertIn("git -C \"$repo\" ls-files -z", sh)  # only tracked files
         self.assertIn("--bind 127.0.0.1", sh)
 
     def test_every_post_has_the_mascot(self):
