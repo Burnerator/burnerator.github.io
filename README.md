@@ -21,8 +21,11 @@ no third-party scripts, fonts or trackers. Works without JavaScript (English).
 
 ## Assets & housekeeping
 
-- `assets/og.png` (social card, 1200×630) and `assets/apple-touch-icon.png` are rendered from
-  `design/*.html` with `scripts/render-assets.sh` (local headless Chrome) and committed: no build step.
+- `assets/og.png` (social card, 1200×630) is rendered from `design/og-card.html` with
+  `scripts/render-assets.sh` (local headless Chrome) and committed: no build step.
+- Avatar and mascot were generated with AI (5 concepts, avatar #1 and mascot #2 chosen) and
+  resized with `sips`: `assets/img/favicon-{32,64}.png`, `assets/apple-touch-icon.png` (180),
+  `assets/img/avatar-512.png` (also the GitHub org avatar), `assets/img/mascot-{240,480}.png`.
 - `.well-known/security.txt` points to GitHub private vulnerability reporting. Its `Expires`
   must be renewed yearly; a test fails 30 days before it expires.
 - `sitemap.xml`: update `lastmod` when content changes.

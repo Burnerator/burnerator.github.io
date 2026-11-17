@@ -197,8 +197,15 @@ class TestDiscoverability(unittest.TestCase):
         html = (ROOT / "404.html").read_text()
         c = parse(ROOT / "404.html")
         self.assertIn("/assets/img/mascot-240.png", [a.get("src") for t, a in c.tags])
-        self.assertIn('lang="es"', html)
-        self.assertTrue(all("alt" in a for t, a in c.tags if t == "img"))
+        self.assertTrue(all(a.get("alt") for t, a in c.tags if t == "img"))
+        # non-empty message in each language, and a translated way home
+        en = re.search(r'<p class="say">([^<]+)</p>', html)
+        es = re.search(r'<p class="say-es" lang="es">([^<]+)</p>', html)
+        self.assertTrue(en and en.group(1).strip(), "missing English message")
+        self.assertTrue(es and es.group(1).strip(), "missing Spanish message")
+        home = re.search(r'<a class="btn primary" href="/">(.+?)</a>', html, re.S)
+        self.assertTrue(home, "missing home link")
+        self.assertRegex(home.group(1), r'Back to the forge.*<span lang="es">[^<]+</span>')
 
     def test_touch_icon(self):
         self.assertEqual(self.png_size(ROOT / "assets" / "apple-touch-icon.png"), (180, 180))
