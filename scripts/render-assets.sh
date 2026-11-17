@@ -11,4 +11,3 @@ render() { # src out width height
   echo "rendered $2"
 }
 render design/og-card.html assets/og.png 1200 630
-render design/icon.html assets/apple-touch-icon.png 180 180

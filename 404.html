@@ -4,18 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
-  <title>404 · Burnerator</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <title>404 · Burnerator</title>
+  <link rel="icon" href="/assets/img/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
   <main>
-    <section class="section join notfound">
-      <h1>404</h1>
-      <pre class="term-body"><span class="p">burnerator@forge:~$</span> cd this-page
-<span class="warn">[!!]</span> This page melted in the forge. / <span lang="es">Esta página se fundió en la forja.</span></pre>
-      <a class="btn primary" href="/">Back to home · <span lang="es">Volver al inicio</span></a>
+    <section class="section notfound">
+      <div class="oops">
+        <img class="mascot" src="/assets/img/mascot-240.png" srcset="/assets/img/mascot-240.png 1x, /assets/img/mascot-480.png 2x" width="220" height="220" alt="The Burnerator blacksmith robot, looking slightly guilty, hammer in hand">
+        <div class="bubble">
+          <h1>404</h1>
+          <p class="say">Oops! I hit this page so hard it flew off the anvil.</p>
+          <p class="say-es" lang="es">¡Uy! Le di tan fuerte a esta página que salió volando del yunque.</p>
+          <pre class="term-body"><span class="p">burnerator@forge:~$</span> find . -name "this-page"
+<span class="warn">[!!]</span> not forged yet · <span lang="es">todavía sin forjar</span></pre>
+          <a class="btn primary" href="/">Back to the forge · <span lang="es">Volver a la forja</span></a>
+        </div>
+      </div>
     </section>
   </main>
 </body>
