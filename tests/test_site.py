@@ -345,10 +345,19 @@ class TestBlog(unittest.TestCase):
         for page in (ROOT / "index.html", ROOT / "blog" / "index.html"):
             self.assertTrue(parse(page).tags[0][1].get("data-title-es"), page)
 
-    def test_no_unreviewed_drafts_in_repo(self):
-        """Articles are published only after the user reviews them (drafts live outside)."""
-        for meta in (ROOT / "content" / "posts").glob("*/*.md"):
-            self.assertNotIn("draft: true", meta.read_text())
+    def test_front_matter_has_no_draft_flag(self):
+        """Narrow guard only: a `draft` key in front matter must never be committed.
+        The real control is process: articles enter the repo only after maintainer review."""
+        for md in (ROOT / "content" / "posts").glob("*/*.md"):
+            head = md.read_text().split("\n---\n", 1)[0]
+            self.assertNotRegex(head, r"(?m)^\s*draft\s*:", md)  # build.py strips key whitespace
+
+    def test_preview_script_is_allowlist_and_fails_loudly(self):
+        sh = (ROOT / "scripts" / "preview.sh").read_text()
+        self.assertNotIn("rsync", sh)
+        self.assertNotIn("|| true", sh)
+        self.assertIn("git -C \"$repo\" ls-files -z", sh)  # only tracked files
+        self.assertIn("--bind 127.0.0.1", sh)
 
     def test_every_post_has_the_mascot(self):
         for page in (ROOT / "blog").glob("**/index.html"):
