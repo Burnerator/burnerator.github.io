@@ -8,7 +8,8 @@ repo_root="$(git rev-parse --show-toplevel)"
 zero="0000000000000000000000000000000000000000"
 
 
-# (no venv needed: checks use the Python standard library only)
+# The clean temp worktree has no .venv: reuse the repo's (hash-pinned build deps).
+[[ -x "$repo_root/.venv/bin/python" ]] && export SITE_PY="$repo_root/.venv/bin/python"
 
 echo "pre-push: secrets gate (full history)..."
 if ! "$repo_root/scripts/check_secrets.sh"; then

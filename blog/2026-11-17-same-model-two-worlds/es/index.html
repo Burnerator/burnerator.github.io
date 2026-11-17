@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil · Burnerator</title>
+  <meta name="description" content="Ejecutamos los mismos modelos abiertos en la API de NVIDIA y en local con Ollama en un MacBook. Velocidad, latencia, aciertos, y por qué un modelo en la nube nunca llegó a responder.">
+  <meta property="og:title" content="El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil · Burnerator">
+  <meta property="og:description" content="Ejecutamos los mismos modelos abiertos en la API de NVIDIA y en local con Ollama en un MacBook. Velocidad, latencia, aciertos, y por qué un modelo en la nube nunca llegó a responder.">
+  <meta property="og:url" content="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/es/">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://www.burnerator.com/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/es/">
+  <link rel="alternate" hreflang="en" href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/">
+  <link rel="alternate" hreflang="es" href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/es/">
+  <link rel="alternate" type="application/atom+xml" title="Burnerator blog" href="/blog/feed.xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">Saltar al contenido</a>
+  <header class="top">
+    <a class="brand" href="/">
+      <img src="/assets/img/favicon-64.png" alt="" width="32" height="32">
+      <span>burnerator</span>
+    </a>
+    <nav>
+      <a href="/#what" data-i18n="nav.what">Qué</a>
+      <a href="/#projects" data-i18n="nav.projects">Proyectos</a>
+      <a href="/blog/" aria-current="page" data-i18n="nav.blog">Blog</a>
+      <a href="/#join" data-i18n="nav.join">Únete</a>
+    </nav>
+  </header>
+  <main id="main">
+    <article class="post">
+      <p class="kicker"><a href="/blog/">// El cuaderno del herrero</a></p>
+      <h1>El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil</h1>
+      <p class="post-meta">Publicado <time datetime="2026-11-17">2026-11-17</time> · 3 min de lectura <a class="lang-link" href="/blog/2026-11-17-same-model-two-worlds/" hreflang="en" lang="en">Read in English</a></p>
+      <div class="post-tags" aria-label="Etiquetas"><span class="tag">benchmark</span><span class="tag">nvidia</span><span class="tag">ollama</span><span class="tag">ia-local</span></div>
+      <div class="prose">
+<p><strong>Resumen rápido:</strong> con un modelo de 20B, un portátil reciente respondió bien a todas las preguntas a unos 63 tokens por segundo. El endpoint gratuito de NVIDIA para ese mismo modelo no respondió en 3 minutos. Con otros modelos, la nube de NVIDIA fue rapidísima: hasta <strong>139 tokens por segundo</strong> y respuestas en <strong>menos de medio segundo</strong>.</p>
+<h2>Qué queríamos saber</h2>
+<p>¿Puedes ejecutar «el mismo modelo» en tu portátil en lugar de llamar a una API en la nube? ¿Y qué pierdes por el camino? Comparamos la API de NVIDIA (<code>integrate.api.nvidia.com</code>) con <a href="https://ollama.com" rel="noopener">Ollama</a> ejecutándose en local.</p>
+<h2>El montaje</h2>
+<ul>
+<li><strong>Portátil:</strong> Apple M5 Pro con 24 GB de memoria unificada y Ollama 0.35.</li>
+<li><strong>Nube:</strong> catálogo de la API de NVIDIA, nivel gratuito.</li>
+<li><strong>Preguntas:</strong> 6 preguntas (una cuenta, una capital, una diferencia de horas, escribir una función pequeña, un resumen en una frase y una explicación de unas 300 palabras), cada una repetida 3 veces.</li>
+<li><strong>Comparación justa:</strong> los dos lados usan el mismo protocolo de streaming compatible con OpenAI. Los proveedores se van turnando en quién empieza, hay una llamada de calentamiento que no se mide y se registra cada reintento.</li>
+<li><strong>Qué modelos:</strong> solo los que existen en los dos lados <em>y</em> caben en 24 GB. Quedaron <code>gpt-oss-20b</code> y dos Nemotron 3.5. Gemma 3 aparece en el catálogo de NVIDIA, pero nuestra cuenta recibió <code>404 Function not found</code>.</li>
+</ul>
+<h2>Resultados</h2>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Dónde</th>
+<th>OK</th>
+<th>Primer token visible</th>
+<th>Velocidad (tok/s)</th>
+<th>Aciertos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gpt-oss-20b</td>
+<td>Portátil (Ollama)</td>
+<td>18/18</td>
+<td>1,43 s</td>
+<td>62,8</td>
+<td>100 %</td>
+</tr>
+<tr>
+<td>gpt-oss-20b</td>
+<td>Nube de NVIDIA</td>
+<td>0/18</td>
+<td>no respondió en 180 s</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>nemotron-3.5-bolt-e4b</td>
+<td>Nube de NVIDIA</td>
+<td>18/18</td>
+<td>0,19 s</td>
+<td>72,5</td>
+<td>100 %</td>
+</tr>
+<tr>
+<td>nemotron-3.5-lightning-30b</td>
+<td>Nube de NVIDIA</td>
+<td>18/18</td>
+<td>2,22 s</td>
+<td>139,1</td>
+<td>78 %</td>
+</tr>
+</tbody>
+</table>
+<p><em>Medianas. «Velocidad» es la velocidad de generación en la pregunta larga. «Aciertos» cuenta las respuestas exactas a las preguntas que tienen una única respuesta correcta.</em></p>
+<h2>Qué significa (en palabras sencillas)</h2>
+<ul>
+<li><strong>Lo local puede ganar a la nube.</strong> En el nivel gratuito, el endpoint de <code>gpt-oss-20b</code> de NVIDIA estaba tan saturado que no llegó a responder, ni siquiera después del calentamiento. El mismo modelo en el portátil acertó todo en algo más de un segundo y medio.</li>
+<li><strong>La nube es rápida cuando está disponible.</strong> Nemotron Bolt respondió en menos de medio segundo. Lightning generó texto unas <strong>2 veces más rápido</strong> que el portátil con <code>gpt-oss-20b</code>.</li>
+<li><strong>El 78 % no es que sea «tonto», es que es «parlanchín».</strong> Lightning <em>piensa en voz alta</em> antes de responder, y 9 de sus 18 respuestas llegaron al límite de 512 tokens antes de dar la respuesta. Con un límite mayor, la mayoría se arreglará. Lo repetiremos.</li>
+</ul>
+<h2>Límites, con honestidad</h2>
+<ul>
+<li>Esto compara <strong>despliegues, no modelos idénticos</strong>. La nube y el portátil usan cuantizaciones y sistemas de servicio distintos.</li>
+<li>Todos los tiempos se miden <strong>desde nuestro lado</strong>, así que incluyen la latencia de red.</li>
+<li><strong>Aún no tenemos cifras de Nemotron en local</strong>: nuestra versión de Ollama era demasiado antigua para esos modelos. Será la siguiente prueba.</li>
+<li>El nivel gratuito cambia de una hora a otra. Tómalo como una foto del momento, no como un veredicto.</li>
+</ul>
+<h2>Pruébalo tú</h2>
+<p>El banco de pruebas es open source y está en <a href="https://github.com/Burnerator/anvil" rel="noopener">Burnerator/anvil</a>:</p>
+<pre><code>python -m nvidia_ai bench --pairs gpt-oss-20b --runs 3
+</code></pre>
+<p>Lo próximo en el yunque: el mismo benchmark con Nemotron en local y un límite de tokens más alto para los modelos parlanchines.</p>
+      </div>
+      <aside class="mascot-says" aria-label="El herrero dice">
+        <img class="mascot mascot-sm" src="/assets/img/mascot-240.png" width="96" height="96" alt="">
+        <div class="bubble"><strong>El herrero dice:</strong> Cronometré cada martillazo. El portátil ganó un asalto, la nube ganó otro, y un modelo ni siquiera se presentó en la forja.</div>
+      </aside>
+      <p class="post-back"><a class="btn" href="/blog/">← Todos los artículos</a></p>
+    </article>
+  </main>
+  <footer class="foot">
+    <p><span class="p">$</span> <span data-i18n="foot.p">hecho con curiosidad, café y un poco de IA</span> · <span>© Burnerator</span></p>
+    <p class="small"><a href="/blog/feed.xml">RSS / Atom</a></p>
+  </footer>
+</body>
+</html>

@@ -9,6 +9,7 @@
     "nav.projects": "Proyectos",
     "nav.how": "Cómo",
     "nav.join": "Únete",
+    "nav.blog": "Blog",
     "term.l1": "calentando la forja...",
     "term.l2": "amigos conectados: unos cuantos",
     "term.l3": "asistentes de IA: listos (los humanos siguen al mando)",
@@ -32,6 +33,14 @@
     "projects.next.t": "Tu idea aquí",
     "projects.next.p": "El próximo proyecto empieza con una conversación. Trae la tuya.",
     "projects.next.tag": "pronto",
+    "latest.title": "Recién salido del cuaderno",
+    "latest.t": "El mismo modelo, dos mundos: la nube de NVIDIA frente a un portátil",
+    "latest.p": "Velocidad, latencia y aciertos, y por qué un modelo en la nube nunca llegó a responder.",
+    "latest.all": "Todos los artículos →",
+    "blog.title": "El cuaderno del herrero",
+    "blog.lead": "Todo lo que calentamos, martilleamos y medimos: benchmarks, experimentos y lecciones aprendidas, contadas en palabras sencillas.",
+    "blog.mascot": "El robot herrero de Burnerator, sujetando orgulloso su martillo",
+    "blog.empty": "El primer artículo se está enfriando en el yunque.",
     "how.title": "Cómo trabajamos",
     "how.s1.t": "Primero, jugar",
     "how.s1.p": "Elegimos una tecnología nueva y brillante y la toqueteamos hasta que tiene sentido.",
@@ -56,6 +65,12 @@
   alts.forEach(function (el) { EN[el.getAttribute("data-i18n-alt")] = el.getAttribute("alt"); });
 
   var btn = document.getElementById("lang-toggle");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.type = "button"; btn.className = "lang"; btn.id = "lang-toggle"; btn.hidden = true;
+    var top = document.querySelector(".top");
+    if (top) top.appendChild(btn);
+  }
   var meta = {
     en: { title: document.title, label: "Cambiar a español", next: "ES", nextLang: "es" },
     es: { title: "Burnerator · una forja de ideas y open source", label: "Switch to English", next: "EN", nextLang: "en" }
@@ -70,6 +85,12 @@
     alts.forEach(function (el) {
       var key = el.getAttribute("data-i18n-alt");
       if (Object.prototype.hasOwnProperty.call(dict, key)) el.setAttribute("alt", dict[key]);
+    });
+    document.querySelectorAll("[data-show-lang]").forEach(function (el) {
+      el.hidden = el.getAttribute("data-show-lang") !== lang &&
+        // fall back to English when a translation is missing
+        !(lang !== "en" && el.getAttribute("data-show-lang") === "en" &&
+          !el.parentNode.querySelector('[data-show-lang="' + lang + '"]'));
     });
     document.documentElement.lang = lang;
     document.title = meta[lang].title;

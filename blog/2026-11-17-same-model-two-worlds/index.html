@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Same model, two worlds: NVIDIA&#x27;s cloud vs. a laptop · Burnerator</title>
+  <meta name="description" content="We ran the same open models on NVIDIA&#x27;s hosted API and locally with Ollama on a MacBook. Speed, latency, accuracy, and why one cloud model never answered at all.">
+  <meta property="og:title" content="Same model, two worlds: NVIDIA&#x27;s cloud vs. a laptop · Burnerator">
+  <meta property="og:description" content="We ran the same open models on NVIDIA&#x27;s hosted API and locally with Ollama on a MacBook. Speed, latency, accuracy, and why one cloud model never answered at all.">
+  <meta property="og:url" content="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://www.burnerator.com/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/">
+  <link rel="alternate" hreflang="en" href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/">
+  <link rel="alternate" hreflang="es" href="https://www.burnerator.com/blog/2026-11-17-same-model-two-worlds/es/">
+  <link rel="alternate" type="application/atom+xml" title="Burnerator blog" href="/blog/feed.xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+  <header class="top">
+    <a class="brand" href="/">
+      <img src="/assets/img/favicon-64.png" alt="" width="32" height="32">
+      <span>burnerator</span>
+    </a>
+    <nav>
+      <a href="/#what" data-i18n="nav.what">What</a>
+      <a href="/#projects" data-i18n="nav.projects">Projects</a>
+      <a href="/blog/" aria-current="page" data-i18n="nav.blog">Blog</a>
+      <a href="/#join" data-i18n="nav.join">Join</a>
+    </nav>
+  </header>
+  <main id="main">
+    <article class="post">
+      <p class="kicker"><a href="/blog/">// The blacksmith&#x27;s logbook</a></p>
+      <h1>Same model, two worlds: NVIDIA&#x27;s cloud vs. a laptop</h1>
+      <p class="post-meta">Published <time datetime="2026-11-17">2026-11-17</time> · 3 min read <a class="lang-link" href="/blog/2026-11-17-same-model-two-worlds/es/" hreflang="es" lang="es">Leer en español</a></p>
+      <div class="post-tags" aria-label="Tags"><span class="tag">benchmark</span><span class="tag">nvidia</span><span class="tag">ollama</span><span class="tag">local-ai</span></div>
+      <div class="prose">
+<p><strong>Short version:</strong> for a 20B model, a recent laptop answered every question correctly at ~63 tokens per second, while the free NVIDIA endpoint for that same model never answered within 3 minutes. For other models, NVIDIA's cloud was fast: up to <strong>139 tokens per second</strong>, and answers in <strong>under half a second</strong>.</p>
+<h2>What we wanted to know</h2>
+<p>Can you run &quot;the same model&quot; on your own laptop instead of calling a cloud API, and what do you give up? We compared NVIDIA's hosted API (<code>integrate.api.nvidia.com</code>) with <a href="https://ollama.com" rel="noopener">Ollama</a> running locally.</p>
+<h2>The setup</h2>
+<ul>
+<li><strong>Laptop:</strong> Apple M5 Pro, 24 GB unified memory, Ollama 0.35.</li>
+<li><strong>Cloud:</strong> NVIDIA API catalog, free tier.</li>
+<li><strong>Prompts:</strong> 6 prompts (arithmetic, a capital city, a time difference, writing a small function, a one-sentence summary and a ~300-word explanation), each run 3 times.</li>
+<li><strong>Fairness:</strong> both sides use the same OpenAI-compatible streaming protocol. The two providers alternate who goes first, there is a warm-up call that is not measured, and every retry is recorded.</li>
+<li><strong>Which models:</strong> only models that exist on both sides <em>and</em> fit in 24 GB. That left <code>gpt-oss-20b</code> and two Nemotron 3.5 models. Gemma 3 is listed in NVIDIA's catalog, but our account got <code>404 Function not found</code>.</li>
+</ul>
+<h2>Results</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Where</th>
+<th>OK</th>
+<th>First visible token</th>
+<th>Speed (tok/s)</th>
+<th>Correct answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gpt-oss-20b</td>
+<td>Laptop (Ollama)</td>
+<td>18/18</td>
+<td>1.43 s</td>
+<td>62.8</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>gpt-oss-20b</td>
+<td>NVIDIA cloud</td>
+<td>0/18</td>
+<td>did not answer within 180 s</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>nemotron-3.5-bolt-e4b</td>
+<td>NVIDIA cloud</td>
+<td>18/18</td>
+<td>0.19 s</td>
+<td>72.5</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>nemotron-3.5-lightning-30b</td>
+<td>NVIDIA cloud</td>
+<td>18/18</td>
+<td>2.22 s</td>
+<td>139.1</td>
+<td>78%</td>
+</tr>
+</tbody>
+</table>
+<p><em>Medians. &quot;Speed&quot; is generation speed on the long prompt. &quot;Correct&quot; counts exact answers to the questions with a single right answer.</em></p>
+<h2>What it means (in plain words)</h2>
+<ul>
+<li><strong>Local can beat the cloud.</strong> On the free tier, NVIDIA's <code>gpt-oss-20b</code> endpoint was too congested to answer at all, even after a warm-up. The same model on the laptop answered every question correctly in about a second and a half.</li>
+<li><strong>The cloud is fast when it is available.</strong> Nemotron Bolt replied in under half a second. Lightning generated text about <strong>2× faster</strong> than the laptop managed with <code>gpt-oss-20b</code>.</li>
+<li><strong>The 78% is not &quot;dumb&quot;, it is &quot;chatty&quot;.</strong> Lightning <em>thinks out loud</em> before answering, and 9 of its 18 answers hit our 512-token limit before reaching the answer. A higher limit should fix most of that. We will re-run it.</li>
+</ul>
+<h2>Honest limits</h2>
+<ul>
+<li>This compares <strong>deployments, not identical models</strong>. The cloud and the laptop use different quantizations and different serving stacks.</li>
+<li>All times are measured <strong>from our side</strong>, so network latency is included.</li>
+<li>We have <strong>no local Nemotron numbers yet</strong>: our Ollama version was too old for those models. That is the next run.</li>
+<li>The free tier changes from hour to hour. Treat this as a snapshot, not a verdict.</li>
+</ul>
+<h2>Try it yourself</h2>
+<p>The harness is open source in <a href="https://github.com/Burnerator/anvil" rel="noopener">Burnerator/anvil</a>:</p>
+<pre><code>python -m nvidia_ai bench --pairs gpt-oss-20b --runs 3
+</code></pre>
+<p>Next on the anvil: the same benchmark with local Nemotron, and a longer token limit for the chatty models.</p>
+      </div>
+      <aside class="mascot-says" aria-label="The blacksmith says">
+        <img class="mascot mascot-sm" src="/assets/img/mascot-240.png" width="96" height="96" alt="">
+        <div class="bubble"><strong>The blacksmith says:</strong> I timed every hammer strike. The laptop won one round, the cloud won another, and one model never showed up to the forge.</div>
+      </aside>
+      <p class="post-back"><a class="btn" href="/blog/">← All articles</a></p>
+    </article>
+  </main>
+  <footer class="foot">
+    <p><span class="p">$</span> <span data-i18n="foot.p">made with curiosity, coffee and a bit of AI</span> · <span>© Burnerator</span></p>
+    <p class="small"><a href="/blog/feed.xml">RSS / Atom</a></p>
+  </footer>
+</body>
+</html>
