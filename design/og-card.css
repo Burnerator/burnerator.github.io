@@ -1,0 +1,17 @@
+/* Only used to render assets/og.png; not loaded by the site. */
+body.og { width: 1200px; height: 630px; overflow: hidden; margin: 0; position: relative; }
+.og-wrap { display: grid; grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: center;
+  height: 100%; padding: 64px 72px; box-sizing: border-box; }
+.og-brand { display: flex; align-items: center; gap: 16px; font: 700 34px/1 var(--mono);
+  margin-bottom: 28px; }
+.og h1 { font-size: 58px; margin: 0 0 22px; }
+.og .kicker { font-size: 22px; }
+.og-sub { color: var(--muted); font-size: 24px; margin: 0; }
+.og-sub strong { color: var(--text); }
+.og-term .term-body { font-size: 22px; }
+.og .cursor { animation: none; }
+.og-url { position: absolute; right: 72px; bottom: 34px; font: 600 20px/1 var(--mono);
+  color: var(--ember-2); }
+
+body.icon-only { margin: 0; width: 180px; height: 180px; overflow: hidden; background: #15110f; }
+body.icon-only img { display: block; }
