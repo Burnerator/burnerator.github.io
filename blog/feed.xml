@@ -4,6 +4,13 @@
   <link href="https://www.burnerator.com/blog/"/>
   <link rel="self" href="https://www.burnerator.com/blog/feed.xml"/>
   <id>https://www.burnerator.com/blog/</id>
-  <updated>2026-11-17T00:00:00Z</updated>
+  <updated>2026-11-18T00:00:00Z</updated>
   <author><name>Burnerator</name></author>
+  <entry>
+    <title>Does graphify save tokens? 280 sessions with Claude Code and Codex</title>
+    <link href="https://www.burnerator.com/blog/2026-11-18-does-graphify-save-tokens/"/>
+    <id>https://www.burnerator.com/blog/2026-11-18-does-graphify-save-tokens/</id>
+    <updated>2026-11-18T00:00:00Z</updated>
+    <summary>A knowledge-graph tool promises AI coding agents will read less and spend less. We used the instructions and hooks its official installer writes, ran 280 sessions with Claude Code and Codex, and every graphify setup had a higher token volume for Claude.</summary>
+  </entry>
 </feed>

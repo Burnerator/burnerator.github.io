@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Does graphify save tokens? 280 sessions with Claude Code and Codex · Burnerator</title>
+  <meta name="description" content="A knowledge-graph tool promises AI coding agents will read less and spend less. We used the instructions and hooks its official installer writes, ran 280 sessions with Claude Code and Codex, and every graphify setup had a higher token volume for Claude.">
+  <meta property="og:title" content="Does graphify save tokens? 280 sessions with Claude Code and Codex · Burnerator">
+  <meta property="og:description" content="A knowledge-graph tool promises AI coding agents will read less and spend less. We used the instructions and hooks its official installer writes, ran 280 sessions with Claude Code and Codex, and every graphify setup had a higher token volume for Claude.">
+  <meta property="og:url" content="https://www.burnerator.com/blog/2026-11-18-does-graphify-save-tokens/">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://www.burnerator.com/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://www.burnerator.com/blog/2026-11-18-does-graphify-save-tokens/">
+  <link rel="alternate" hreflang="en" href="https://www.burnerator.com/blog/2026-11-18-does-graphify-save-tokens/">
+  <link rel="alternate" hreflang="es" href="https://www.burnerator.com/blog/2026-11-18-does-graphify-save-tokens/es/">
+  <link rel="alternate" type="application/atom+xml" title="Burnerator blog" href="/blog/feed.xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+  <header class="top">
+    <a class="brand" href="/">
+      <img src="/assets/img/favicon-64.png" alt="" width="32" height="32">
+      <span>burnerator</span>
+    </a>
+    <nav>
+      <a href="/#what" data-i18n="nav.what">What</a>
+      <a href="/#projects" data-i18n="nav.projects">Projects</a>
+      <a href="/blog/" aria-current="page" data-i18n="nav.blog">Blog</a>
+      <a href="/#join" data-i18n="nav.join">Join</a>
+    </nav>
+  </header>
+  <main id="main">
+    <article class="post">
+      <p class="kicker"><a href="/blog/">// The blacksmith&#x27;s logbook</a></p>
+      <h1>Does graphify save tokens? 280 sessions with Claude Code and Codex</h1>
+      <p class="post-meta">Published <time datetime="2026-11-18">2026-11-18</time> · 13 min read <a class="lang-link" href="/blog/2026-11-18-does-graphify-save-tokens/es/" hreflang="es" lang="es">Leer en español</a></p>
+      <div class="post-tags" aria-label="Tags"><span class="tag">experiment</span><span class="tag">graphify</span><span class="tag">claude-code</span><span class="tag">codex</span><span class="tag">tokens</span></div>
+      <div class="prose">
+<p><strong>Short version:</strong> we gave Claude Code and Codex <a href="https://github.com/Graphify-Labs/graphify" rel="noopener">graphify</a> with the exact instruction text its own installer writes, plus, for Claude only, graphify's hooks and its strict mode (which our harness switched on). Codex kept the installer's hook file, which does nothing. Two things we changed on purpose: Claude's hooks ran through a small logger, and in the second run a bare <code>graphify</code> command went through a safe wrapper (details below). Then we asked them to explain and review real code. <strong>For Claude Code, every graphify setup had a higher median token volume than no graphify: +12% to +63% per session</strong> (+6% to +55% if we compare only with the no-graphify sessions of the same day). For Codex the observed medians were roughly unchanged: −11% to +9% with the official text, depending on the baseline. Answer coverage moved by a few points in most cells. These are the volumes we observed with the design described below, not a proof of why.</p>
+<h2>What graphify promises</h2>
+<p>graphify turns a repository into a knowledge graph (<code>graphify-out/graph.json</code> plus a report). Its installer adds instructions telling the agent to ask the graph first (<code>graphify query &quot;...&quot;</code>) instead of grepping and reading files. For Claude Code it can also add <strong>hooks</strong> that nudge the agent towards the graph when it searches (Bash, Grep) or reads (Read, Glob). A <strong>strict mode</strong> goes further: the first <em>eligible</em> raw <code>Read</code> or <code>Grep</code> is denied once, as a nudge, when there has been no recent graph retrieval, and reissuing it is allowed. &quot;Recent&quot; is a timestamp shared by the whole checkout and fresh for 30 minutes, and our harness reused each strict checkout across repetitions, so an earlier session's query could suppress a later session's denial. The block fires at most once per session. In our runs one session logged a denial; that agent then read the same file with <code>Read</code> instead of reissuing the <code>Grep</code>.</p>
+<p>The &quot;80% fewer tokens&quot; headline in graphify's README is about <strong><a href="https://github.com/Graphify-Labs/graphify#graphify-cloud" rel="noopener">Graphify Cloud</a></strong>, a hosted product. We tested the <strong>open-source package</strong> (<code>graphifyy</code> 0.9.111). Its README benchmark measures retrieval quality (<a href="https://github.com/Graphify-Labs/graphify/blob/v8/BENCHMARKS.md" rel="noopener">BENCHMARKS.md</a>). Its docs also have a <a href="https://docs.graphify.com/open-source/features/token-benchmark" rel="noopener"><code>graphify benchmark</code></a> command that <em>estimates</em> savings per query against reading the whole repository, and they call that ratio &quot;a guide to scale, not a billing figure&quot;. We measured something else: what the agents actually consumed, end to end. So this article answers a narrower question: <em>does the open-source tool, set up the official way, lower the agents' token volume?</em></p>
+<h2>A correction first</h2>
+<p>This is our second run. In the first one, the &quot;graph&quot; condition used graphify's <strong>generic</strong> rules text, not the exact text that <code>graphify claude install</code> and <code>graphify codex install</code> write. That was a fair objection, so we did it again:</p>
+<ul>
+<li><strong>official texts:</strong> the instruction files are now the installer's exact output, byte for byte;</li>
+<li><strong>hooks and strict:</strong> added for Claude Code;</li>
+<li><strong>a code-review task:</strong> graphify documents a <a href="https://docs.graphify.com/open-source/features/pr-impact" rel="noopener">pull-request workflow</a>, so we added the review of 4 real pull requests.</li>
+</ul>
+<p>The first run is kept in the data as <code>rules-generic</code>. For Claude, and for the pooled task A comparisons, its numbers point the same way as the new ones. For Codex on anvil they don't: against each day's own baseline, generic rules used 25% more tokens and official rules 11% fewer.</p>
+<h2>How we tested it</h2>
+<ul>
+<li>
+<p><strong>Agents:</strong></p>
+<ul>
+<li>Claude Code (<code>claude -p</code>, model alias <code>sonnet</code>);</li>
+<li>Codex (<code>codex exec</code>, read-only sandbox, default model).</li>
+</ul>
+</li>
+<li>
+<p><strong>Codebases, pinned to exact commits:</strong></p>
+<ul>
+<li>our own <a href="https://github.com/Burnerator/anvil" rel="noopener">anvil</a> (9 Python files, 1.1k lines);</li>
+<li><a href="https://github.com/encode/httpx/tree/0.28.1" rel="noopener">httpx 0.28.1</a> (60 files, 17.8k lines).</li>
+</ul>
+</li>
+<li>
+<p><strong>Task A, understand:</strong> 8 architecture questions, for example <em>&quot;Trace what happens when calling httpx.get()&quot;</em>.</p>
+</li>
+<li>
+<p><strong>Task B, review:</strong> &quot;review the changes between this commit and HEAD&quot; on 4 real merged httpx PRs:</p>
+<ul>
+<li><a href="https://github.com/encode/httpx/pull/3377" rel="noopener">#3377</a>, lazy loading of <code>certifi</code> and <code>httpcore</code>;</li>
+<li><a href="https://github.com/encode/httpx/pull/2879" rel="noopener">#2879</a>, the new <code>proxy</code> parameter;</li>
+<li><a href="https://github.com/encode/httpx/pull/3139" rel="noopener">#3139</a>, zstd decoding;</li>
+<li><a href="https://github.com/encode/httpx/pull/3389" rel="noopener">#3389</a>, moving helpers out of <code>_utils.py</code>.</li>
+</ul>
+<p>The graph is built on the PR's base commit, as graphify's PR guide says (&quot;run <code>graphify update .</code> on the base branch first&quot;).</p>
+</li>
+<li>
+<p><strong>Conditions</strong> (every one on identical checkouts):</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>What the agent gets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base</code></td>
+<td>nothing extra</td>
+</tr>
+<tr>
+<td><code>rules-official</code></td>
+<td>graph + the exact <code>CLAUDE.md</code> / <code>AGENTS.md</code> text from graphify's installer (Claude without hooks; Codex keeps the installer's no-op hook file)</td>
+</tr>
+<tr>
+<td><code>hooks</code> (Claude)</td>
+<td>as above + graphify's own PreToolUse and SessionStart hooks</td>
+</tr>
+<tr>
+<td><code>strict</code> (Claude)</td>
+<td>as above + <code>GRAPHIFY_HOOK_STRICT=1</code></td>
+</tr>
+<tr>
+<td><code>rules-generic</code> (first run)</td>
+<td>graph + graphify's generic rules text</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>Repetitions:</strong> 3 per question × condition, except the no-graphify task A sessions of the second run: 1 per question, pooled with the 3 of the first run. Within each batch, the order of conditions alternated. In the second run, the no-graphify sessions ran as separate batches (see the limits).</p>
+</li>
+<li>
+<p><strong>Metrics:</strong> tokens, tool calls and graphify commands come from each agent's own event stream; hook firings from our hook wrapper's logs; quality from the rubric applied to the final answer:</p>
+<ul>
+<li>tokens: uncached input, cached input, cache writes and output;</li>
+<li>tool calls;</li>
+<li>every graphify retrieval command (<code>query</code>, <code>path</code>, <code>explain</code>, <code>section</code>), whether its shell command succeeded, and how much text it returned;</li>
+<li>every firing of graphify's Claude hooks and its decision, from the logs of our hook wrapper.</li>
+</ul>
+</li>
+<li>
+<p><strong>Quality:</strong> a rubric of 5–8 key points per question, each one checked to exist in the code. For the PR reviews, the rubric is derived mechanically from the diff, not from the graph: up to 3 changed files, up to 3 touched functions or classes, and up to 3 other files that mention the most of those names. It checks that the answer mentions them, not that it is correct.</p>
+</li>
+<li>
+<p><strong>Controls:</strong> the instructions pointed the agents to an allowlist wrapper with no API keys and no LLM backend. In the second run a bare <code>graphify</code> resolved to it through the agents' <code>PATH</code>; in the first run the instructions named the wrapper explicitly and the agents kept our normal <code>PATH</code>. The real graphify binary stayed reachable by its full path, and the official installers ran in throwaway copies with a fake home directory. This is not a sandbox: both agents ran with our normal installation and global settings, which we did not change between conditions. The report lists exactly what was and wasn't enforced.</p>
+</li>
+</ul>
+<p><strong>280 sessions in total, all completed successfully.</strong></p>
+<h2>Did the agents actually call graphify?</h2>
+<p>They did call it, according to the shell-level count below, which is what makes the result meaningful. That count can include a query that printed only a diagnostic (for example &quot;No node matching&quot;), or a pipeline whose last command succeeded.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Sessions with a detected graphify command that succeeded*</th>
+<th>graphify output (median serialized characters per setup, over sessions with output†)</th>
+<th>Hook firings per session (logged by our hook wrapper)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude, task A</td>
+<td>100% in every graphify setup</td>
+<td>6,700–14,500 characters</td>
+<td>4–6 (hooks / strict)</td>
+</tr>
+<tr>
+<td>Claude, task B</td>
+<td>11/12 (official, hooks), 8/12 (strict)</td>
+<td>6,600–6,700 characters</td>
+<td>4–5 (hooks / strict)</td>
+</tr>
+<tr>
+<td>Codex, task A</td>
+<td>100%</td>
+<td>6,600–10,000 characters</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Codex, task B</td>
+<td>100%</td>
+<td>6,700 characters (5 of 12 sessions**)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Any agent, no graphify</td>
+<td>0 sessions</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><em>* Detected heuristically by matching the shell command text; it counts as succeeded if the shell command exited 0 (Codex) or its tool result was not an error (Claude). Output is the tool result as recorded, so a <code>| head</code> pipeline is truncated. Output counts only commands that ran nothing but graphify (pipes into <code>head</code>/<code>tail</code>, <code>echo</code> separators, <code>which graphify</code> and the <code>if test -f graphify-out/graph.json</code> guard are accepted, so their few extra characters are included); commands mixed with other shell commands count as calls but not as output, which is why only 5 Codex review sessions have an output figure.** The report has the per-setup table.</em></p>
+<p><em>† The median counts only sessions with non-empty output from successful, graphify-only commands. Counting the other sessions as zero lowers some cells: for example, Claude strict on task B is 6,678 characters over 8 such sessions, and 3,985 over all 12.</em></p>
+<h2>Results</h2>
+<p><strong>Task B, reviewing real pull requests.</strong> We followed the base-graph step of graphify's PR-review guide and used our own review prompt; graphify's <code>graphify prs</code> command was not part of the experiment. Medians over 12 sessions per cell:</p>
+<table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>No graphify</th>
+<th>Official rules</th>
+<th>Hooks</th>
+<th>Strict</th>
+<th>Quality (mean coverage)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude Code</td>
+<td>168,940</td>
+<td>230,981 (<strong>+37%</strong>)</td>
+<td>260,136 (<strong>+54%</strong>)</td>
+<td>236,453 (<strong>+40%</strong>)</td>
+<td>79% → 83–84%</td>
+</tr>
+<tr>
+<td>Codex</td>
+<td>109,708</td>
+<td>106,391 (<strong>−3%</strong>)</td>
+<td>—</td>
+<td>—</td>
+<td>68% → 71%</td>
+</tr>
+</tbody>
+</table>
+<p><em>Total tokens per session (uncached input + cached input + cache writes + output, over all the models a session used). For Claude, the API-equivalent cost went from $0.11 to $0.14–0.15 per review. Both rows compare same-day batches; task B has no alternative-baseline check (the tool-count check below covers it).</em></p>
+<p><strong>Task A, explaining code</strong>, median total tokens per session. The base pools both runs: 12 sessions on anvil, 20 on httpx.</p>
+<table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Codebase</th>
+<th>No graphify</th>
+<th>Generic rules</th>
+<th>Official rules</th>
+<th>Hooks</th>
+<th>Strict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude Code</td>
+<td>anvil</td>
+<td>186,602</td>
+<td>+19%</td>
+<td>+33%</td>
+<td>+23%</td>
+<td>+22%</td>
+</tr>
+<tr>
+<td>Claude Code</td>
+<td>httpx</td>
+<td>204,540</td>
+<td>+36%</td>
+<td>+12%</td>
+<td>+58%</td>
+<td>+63%</td>
+</tr>
+<tr>
+<td>Codex</td>
+<td>anvil</td>
+<td>67,634</td>
+<td>+14%</td>
+<td>+9%</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Codex</td>
+<td>httpx</td>
+<td>64,732</td>
+<td>+33%</td>
+<td>+8%</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sensitivity check.</strong> If each setup is compared only with the no-graphify sessions of its own day (just 1 repetition per question in the second run), the Claude anvil numbers shrink (+16% official, +8% hooks, +7% strict), Claude httpx stays up (+6% official, +49% hooks, +55% strict), and Codex anvil with the official text flips to −11%. Differences that small are not settled by this data. Task B has a single baseline, so there is no alternative-baseline check for it.</p>
+<p><strong>A second check: Claude's tool count.</strong> Our installation exposed either 21 or 46 extra tools to Claude (anything outside the experiment's own tool set: plugins, connectors and other CLI features), and not evenly across setups. In the 21-extra-tool subset, every Claude increase keeps its sign; the review increases get bigger (+74% to +96%) and the task A ones change by −3 to +18 percentage points. Equal counts don't prove identical tools, so this narrows the doubt about the direction but doesn't remove the imbalance as a confound.</p>
+<p><strong>Question by question</strong> (the median of each question's repetitions, compared only with the same question without graphify), the graphify median was lower on <strong>at most 1 question out of 3–5</strong> for Claude in any setup. Taking the geometric mean of the per-question ratios, Claude used <strong>1.16× to 1.74×</strong> the tokens of no graphify. Codex used <strong>1.04× to 1.21×</strong>.</p>
+<h2>What it means, in plain words</h2>
+<ul>
+<li><strong>The map didn't replace the walk, as far as the traces show.</strong> In the graphify setups, graph queries and direct searching and reading of files appear side by side, not in one fixed order (one review ran <code>git diff --stat</code> before its first query). graphify's output, thousands of characters, was part of the context. In the PR reviews, Claude's median tool output (serialized characters per session) went from 12,400 to 14,400–15,900. We did not measure which files each setup read or how much reading the graph replaced, so this does not explain the higher totals; it only describes what the traces contain.</li>
+<li><strong>The setups that push hardest had the highest Claude medians.</strong> The hooks and strict mode, which push the agent towards the graph, had the highest observed Claude token medians on httpx and in the reviews. With the batch and tool-count caveats below, that is what we observed, not a measurement of what the hooks cause.</li>
+<li><strong>Codex barely moved.</strong> With the official text it ran a graphify command in every session and its observed medians ended up about where they started.</li>
+<li><strong>Quality: a small plus in most cells, not all.</strong> In the reviews, graphify setups covered slightly more expected points on average (mean coverage 79% → 83–84% for Claude, 68% → 71% for Codex). But Codex with the generic text on anvil dropped from 93% to 84%. With 9–15 sessions per graphify cell and no significance test, these are small differences, not findings.</li>
+</ul>
+<h2>Honest limits</h2>
+<ul>
+<li><strong>Small samples.</strong> 3 repetitions per question and condition (1 for the second run's no-graphify task A sessions). Between the two days, the same no-graphify setup varied by +1% to +33% (3 repetitions per question on day one, 1 on day two, with slightly different Claude launch settings: the second run also pre-approved bare <code>graphify</code> and <code>git diff/log/show</code>). That shows such swings happen; it can't set a precise noise threshold. Differences of that size (Codex, some Claude cells) are not conclusive. The Claude increases in task B, and with hooks and strict on httpx, are larger and hold against the same-day baseline too.</li>
+<li><strong>No-graphify sessions ran in separate batches.</strong> In the second run's main batches (excluding the pilot), the first recorded timestamp in each Claude trace falls between 08:58 and 09:21 UTC for task B's graphify sessions and between 09:22 and 09:37 for its no-graphify ones, and task A's single extra repetition ran last. One PR repetition came from a pilot run before the main batches (restarted at least once); there, the first recorded timestamps are 07:31–07:32 UTC for its Claude graphify sessions and 07:42 for its no-graphify one, so the same graphify-then-baseline order held there. A time-of-day influence is not ruled out for task B. Task A also uses the first run's no-graphify sessions. That run was two invocations into the same directory: <code>--reps 1</code> first, then <code>--reps 3</code>, which skipped the completed first repetition and ran the other two. The two setups alternated within each question and repetition.</li>
+<li><strong>Our normal installation.</strong> Both agents ran with our usual global settings, plugins and a startup hook. They add context, let Claude run extra shell commands, and the number of tools they exposed to Claude changed during the runs, unevenly across setups (see the tool-set check above). Another setup may give different numbers.</li>
+<li><strong>Two Python codebases.</strong> graphify's docs say savings grow with the size of the corpus; we did not test a very large one.</li>
+<li><strong>Graphify Cloud</strong> is a different product, and nothing here says anything about it.</li>
+<li><strong>The quality rubric checks that key points are mentioned</strong>, not that the whole explanation is correct.</li>
+<li><strong>Claude and Codex numbers can't be compared with each other</strong> (different models, tokenizers and caching). Compare setups within one agent.</li>
+<li><strong>Token volume and API-equivalent cost only.</strong> The runs used subscription logins; nothing was billed.</li>
+</ul>
+<h2>Check it, break it, tell us</h2>
+<p>Everything is in one repository:</p>
+<ul>
+<li>the harness, the questions and rubrics, and the corpus commits (pinned, and cloned by the harness);</li>
+<li>the instruction files exactly as graphify's installers wrote them, and the hook settings as we instrumented them;</li>
+<li><strong>every session's trace</strong>, and the hook log of each <code>hooks</code> / <code>strict</code> session, redacted of our local details;</li>
+<li>the generated report, with all the tables, the sensitivity check and the method.</li>
+</ul>
+<p>Repository: <a href="https://github.com/Burnerator/graphify-tokens" rel="noopener">github.com/Burnerator/graphify-tokens</a>. If you run it and get different numbers, open an issue. That is the point.</p>
+      </div>
+      <aside class="mascot-says" aria-label="The blacksmith says">
+        <img class="mascot mascot-sm" src="/assets/img/mascot-240.png" width="96" height="96" alt="">
+        <div class="bubble"><strong>The blacksmith says:</strong> I gave both apprentices a map of the forge. They read the map, then walked the corridors anyway.</div>
+      </aside>
+      <p class="post-back"><a class="btn" href="/blog/">← All articles</a></p>
+    </article>
+  </main>
+  <footer class="foot">
+    <p><span class="p">$</span> <span data-i18n="foot.p">made with curiosity, coffee and a bit of AI</span> · <span>© Burnerator</span></p>
+    <p class="small"><a href="/blog/feed.xml">RSS / Atom</a></p>
+  </footer>
+</body>
+</html>
