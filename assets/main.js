@@ -16,6 +16,7 @@
     "term.l4": "nivel de curiosidad: peligrosamente alto",
     "hero.kicker": "// una forja de ideas y open source",
     "hero.title": "Calentamos ideas hasta que se convierten en proyectos.",
+    "hero.motto": "Probamos la IA a martillazos.",
     "hero.lead1": "Burnerator es un grupo de amigos que experimenta con nuevas tecnologías, en plan geek. Construimos en abierto, con la IA como compañera, y lo contamos para que cualquiera pueda seguirlo:",
     "hero.lead2": "IA para dummies",
     "hero.lead3": ", sin necesidad de doctorado.",
@@ -55,6 +56,7 @@
     "join.cta": "github.com/Burnerator",
     "join.mascot": "La mascota de Burnerator: un pequeño robot herrero muy simpático, con ojos de brasa y un martillo",
     "foot.p": "hecho con curiosidad, café y un poco de IA",
+    "foot.motto": "probamos la IA a martillazos",
     "foot.privacy": "El código de esta web no usa cookies, analítica ni rastreadores. Tu elección de idioma se guarda en tu navegador. Alojada en GitHub Pages, que puede registrar datos técnicos como la dirección IP."
   };
 
