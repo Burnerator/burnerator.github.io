@@ -213,7 +213,8 @@ def shell(*, lang: str, title: str, description: str, canonical: str, body: str,
   </main>
   <footer class="foot">
     <p><span class="p">$</span> <span data-i18n="foot.p">{"made with curiosity, coffee and a bit of AI" if lang == "en"
-       else "hecho con curiosidad, café y un poco de IA"}</span> · <span>© Burnerator</span></p>
+       else "hecho con curiosidad, café y un poco de IA"}</span> · <span class="motto-foot" data-i18n="foot.motto">{"testing AI, one hammer blow at a time" if lang == "en"
+       else "probamos la IA a martillazos"}</span> · <span>© Burnerator</span></p>
     <p class="small"><a href="/blog/feed.xml">RSS / Atom</a></p>
   </footer>
 </body>
