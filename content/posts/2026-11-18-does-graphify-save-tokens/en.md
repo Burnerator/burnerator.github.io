@@ -30,7 +30,7 @@ The first run is kept in the data as `rules-generic`. For Claude, and for the po
   - Claude Code (`claude -p`, model alias `sonnet`);
   - Codex (`codex exec`, read-only sandbox, default model).
 - **Codebases, pinned to exact commits:**
-  - our own [anvil](https://github.com/Burnerator/anvil) (9 Python files, 1.1k lines);
+  - *anvil*, our internal workspace repository (9 Python files, 1.1k lines). It is not public, so its sessions are published as data but cannot be reproduced outside Burnerator;
   - [httpx 0.28.1](https://github.com/encode/httpx/tree/0.28.1) (60 files, 17.8k lines).
 - **Task A, understand:** 8 architecture questions, for example *"Trace what happens when calling httpx.get()"*.
 - **Task B, review:** "review the changes between this commit and HEAD" on 4 real merged httpx PRs:
@@ -125,7 +125,7 @@ They did call it, according to the shell-level count below, which is what makes 
 
 Everything is in one repository:
 
-- the harness, the questions and rubrics, and the corpus commits (pinned, and cloned by the harness);
+- the harness, the questions and rubrics, and the pinned httpx commits (cloned by the harness). The internal anvil corpus is not public: its sessions are included as data, but only the httpx runs can be reproduced;
 - the instruction files exactly as graphify's installers wrote them, and the hook settings as we instrumented them;
 - **every session's trace**, and the hook log of each `hooks` / `strict` session, redacted of our local details;
 - the generated report, with all the tables, the sensitivity check and the method.
