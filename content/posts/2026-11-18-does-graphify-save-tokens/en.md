@@ -125,7 +125,7 @@ They did call it, according to the shell-level count below, which is what makes 
 
 Everything is in one repository:
 
-- the harness, the questions and rubrics, and the corpus commits (pinned, and cloned by the harness);
+- the harness, the questions and rubrics, and the pinned httpx commits (cloned by the harness). The internal anvil corpus is not public: its sessions are included as data, but only the httpx runs can be reproduced;
 - the instruction files exactly as graphify's installers wrote them, and the hook settings as we instrumented them;
 - **every session's trace**, and the hook log of each `hooks` / `strict` session, redacted of our local details;
 - the generated report, with all the tables, the sensitivity check and the method.
