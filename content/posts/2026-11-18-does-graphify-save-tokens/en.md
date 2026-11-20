@@ -30,7 +30,7 @@ The first run is kept in the data as `rules-generic`. For Claude, and for the po
   - Claude Code (`claude -p`, model alias `sonnet`);
   - Codex (`codex exec`, read-only sandbox, default model).
 - **Codebases, pinned to exact commits:**
-  - our own [anvil](https://github.com/Burnerator/anvil) (9 Python files, 1.1k lines);
+  - *anvil*, our internal workspace repository (9 Python files, 1.1k lines). It is not public, so its sessions are published as data but cannot be reproduced outside Burnerator;
   - [httpx 0.28.1](https://github.com/encode/httpx/tree/0.28.1) (60 files, 17.8k lines).
 - **Task A, understand:** 8 architecture questions, for example *"Trace what happens when calling httpx.get()"*.
 - **Task B, review:** "review the changes between this commit and HEAD" on 4 real merged httpx PRs:

@@ -30,7 +30,7 @@
     "what.c3.t": "IA para dummies",
     "what.c3.p": "Probamos herramientas de IA con problemas reales y te contamos, en palabras sencillas, qué hacen, cuánto cuestan y dónde fallan.",
     "projects.title": "Sobre el yunque",
-    "projects.anvil": "Nuestro banco de trabajo: las herramientas con las que forjamos cada proyecto, con tests, escaneo de secretos y un revisor de IA independiente en cada cambio.",
+    "projects.gt": "¿graphify ahorra tokens? 280 sesiones con Claude Code y Codex, con el código y todas las trazas para que lo ejecutes tú.",
     "projects.next.t": "Tu idea aquí",
     "projects.next.p": "El próximo proyecto empieza con una conversación. Trae la tuya.",
     "projects.next.tag": "pronto",
